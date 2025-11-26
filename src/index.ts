@@ -5,50 +5,18 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { createServer } from "http";
 import { z } from "zod";
-import Database from "better-sqlite3";
-import { join, dirname } from "path";
-import { fileURLToPath } from "url";
-import { existsSync, mkdirSync } from "fs";
+import { createClient } from "@supabase/supabase-js";
 
-// Database setup
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const dataDir = process.env.MCQMCP_DATA_DIR || join(__dirname, "..", "data");
+// Supabase setup
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
 
-if (!existsSync(dataDir)) {
-  mkdirSync(dataDir, { recursive: true });
+if (!supabaseUrl || !supabaseKey) {
+  console.error("Missing SUPABASE_URL or SUPABASE_KEY environment variables");
+  process.exit(1);
 }
 
-const db = new Database(join(dataDir, "mcqmcp.db"));
-
-// Initialize schema
-db.exec(`
-  CREATE TABLE IF NOT EXISTS mastery (
-    user_id TEXT NOT NULL,
-    objective TEXT NOT NULL,
-    correct INTEGER DEFAULT 0,
-    total INTEGER DEFAULT 0,
-    updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (user_id, objective)
-  )
-`);
-
-// Prepared statements for performance
-const getObjective = db.prepare(`
-  SELECT correct, total FROM mastery WHERE user_id = ? AND objective = ?
-`);
-
-const getAllObjectives = db.prepare(`
-  SELECT objective, correct, total FROM mastery WHERE user_id = ?
-`);
-
-const upsertMastery = db.prepare(`
-  INSERT INTO mastery (user_id, objective, correct, total, updated_at)
-  VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
-  ON CONFLICT(user_id, objective) DO UPDATE SET
-    correct = excluded.correct,
-    total = excluded.total,
-    updated_at = CURRENT_TIMESTAMP
-`);
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Create MCP server
 const server = new McpServer({
@@ -139,10 +107,16 @@ server.tool(
     correct_answer: z.string().describe("The correct answer (A, B, C, or D)"),
   },
   async ({ user_id, objective, selected_answer, correct_answer }) => {
-    // Get current stats
-    const row = getObjective.get(user_id, objective) as { correct: number; total: number } | undefined;
-    let correctCount = row?.correct ?? 0;
-    let totalCount = row?.total ?? 0;
+    // Get current stats from Supabase
+    const { data: existing } = await supabase
+      .from("mastery")
+      .select("correct, total")
+      .eq("user_id", user_id)
+      .eq("objective", objective)
+      .single();
+
+    let correctCount = existing?.correct ?? 0;
+    let totalCount = existing?.total ?? 0;
 
     // Update stats
     const wasCorrect = selected_answer.toUpperCase() === correct_answer.toUpperCase();
@@ -151,8 +125,21 @@ server.tool(
     }
     totalCount++;
 
-    // Save to database
-    upsertMastery.run(user_id, objective, correctCount, totalCount);
+    // Upsert to Supabase
+    const { error } = await supabase.from("mastery").upsert(
+      {
+        user_id,
+        objective,
+        correct: correctCount,
+        total: totalCount,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id,objective" }
+    );
+
+    if (error) {
+      console.error("Supabase error:", error);
+    }
 
     const masteryEstimate = Math.round((correctCount / totalCount) * 100);
 
@@ -190,7 +177,13 @@ server.tool(
   async ({ user_id, objective }) => {
     if (objective) {
       // Return specific objective
-      const row = getObjective.get(user_id, objective) as { correct: number; total: number } | undefined;
+      const { data: row } = await supabase
+        .from("mastery")
+        .select("correct, total")
+        .eq("user_id", user_id)
+        .eq("objective", objective)
+        .single();
+
       if (!row) {
         return {
           content: [
@@ -234,9 +227,12 @@ server.tool(
     }
 
     // Return all objectives
-    const rows = getAllObjectives.all(user_id) as Array<{ objective: string; correct: number; total: number }>;
+    const { data: rows } = await supabase
+      .from("mastery")
+      .select("objective, correct, total")
+      .eq("user_id", user_id);
 
-    const objectives = rows.map((row) => ({
+    const objectives = (rows || []).map((row) => ({
       objective: row.objective,
       correct: row.correct,
       total: row.total,
@@ -315,14 +311,14 @@ async function main() {
       console.error(`MCQMCP server running on http://localhost:${port}`);
       console.error(`SSE endpoint: http://localhost:${port}/sse`);
       console.error(`Messages endpoint: http://localhost:${port}/messages`);
-      console.error(`Database: ${join(dataDir, "mcqmcp.db")}`);
+      console.error(`Supabase: ${supabaseUrl}`);
     });
   } else {
     // Stdio transport (default)
     const transport = new StdioServerTransport();
     await server.connect(transport);
     console.error("MCQMCP server running on stdio");
-    console.error(`Database: ${join(dataDir, "mcqmcp.db")}`);
+    console.error(`Supabase: ${supabaseUrl}`);
   }
 }
 
