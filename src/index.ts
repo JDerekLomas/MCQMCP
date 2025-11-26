@@ -5,17 +5,50 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { createServer } from "http";
 import { z } from "zod";
+import Database from "better-sqlite3";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
+import { existsSync, mkdirSync } from "fs";
 
-// In-memory state: Map<user_id, Map<objective, {correct, total}>>
-const masteryState = new Map<string, Map<string, { correct: number; total: number }>>();
+// Database setup
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const dataDir = process.env.MCQMCP_DATA_DIR || join(__dirname, "..", "data");
 
-// Helper to get or create user's mastery data
-function getUserMastery(userId: string): Map<string, { correct: number; total: number }> {
-  if (!masteryState.has(userId)) {
-    masteryState.set(userId, new Map());
-  }
-  return masteryState.get(userId)!;
+if (!existsSync(dataDir)) {
+  mkdirSync(dataDir, { recursive: true });
 }
+
+const db = new Database(join(dataDir, "mcqmcp.db"));
+
+// Initialize schema
+db.exec(`
+  CREATE TABLE IF NOT EXISTS mastery (
+    user_id TEXT NOT NULL,
+    objective TEXT NOT NULL,
+    correct INTEGER DEFAULT 0,
+    total INTEGER DEFAULT 0,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, objective)
+  )
+`);
+
+// Prepared statements for performance
+const getObjective = db.prepare(`
+  SELECT correct, total FROM mastery WHERE user_id = ? AND objective = ?
+`);
+
+const getAllObjectives = db.prepare(`
+  SELECT objective, correct, total FROM mastery WHERE user_id = ?
+`);
+
+const upsertMastery = db.prepare(`
+  INSERT INTO mastery (user_id, objective, correct, total, updated_at)
+  VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+  ON CONFLICT(user_id, objective) DO UPDATE SET
+    correct = excluded.correct,
+    total = excluded.total,
+    updated_at = CURRENT_TIMESTAMP
+`);
 
 // Create MCP server
 const server = new McpServer({
@@ -106,22 +139,22 @@ server.tool(
     correct_answer: z.string().describe("The correct answer (A, B, C, or D)"),
   },
   async ({ user_id, objective, selected_answer, correct_answer }) => {
-    const userMastery = getUserMastery(user_id);
-
-    // Get or create objective stats
-    if (!userMastery.has(objective)) {
-      userMastery.set(objective, { correct: 0, total: 0 });
-    }
-    const stats = userMastery.get(objective)!;
+    // Get current stats
+    const row = getObjective.get(user_id, objective) as { correct: number; total: number } | undefined;
+    let correctCount = row?.correct ?? 0;
+    let totalCount = row?.total ?? 0;
 
     // Update stats
     const wasCorrect = selected_answer.toUpperCase() === correct_answer.toUpperCase();
     if (wasCorrect) {
-      stats.correct++;
+      correctCount++;
     }
-    stats.total++;
+    totalCount++;
 
-    const masteryEstimate = Math.round((stats.correct / stats.total) * 100);
+    // Save to database
+    upsertMastery.run(user_id, objective, correctCount, totalCount);
+
+    const masteryEstimate = Math.round((correctCount / totalCount) * 100);
 
     return {
       content: [
@@ -134,7 +167,7 @@ server.tool(
               selected_answer,
               correct_answer,
               was_correct: wasCorrect,
-              current_score: `${stats.correct}/${stats.total}`,
+              current_score: `${correctCount}/${totalCount}`,
               mastery_estimate: `${masteryEstimate}%`,
             },
             null,
@@ -155,12 +188,10 @@ server.tool(
     objective: z.string().optional().describe("Specific objective to query (omit for all objectives)"),
   },
   async ({ user_id, objective }) => {
-    const userMastery = getUserMastery(user_id);
-
     if (objective) {
       // Return specific objective
-      const stats = userMastery.get(objective);
-      if (!stats) {
+      const row = getObjective.get(user_id, objective) as { correct: number; total: number } | undefined;
+      if (!row) {
         return {
           content: [
             {
@@ -180,7 +211,7 @@ server.tool(
         };
       }
 
-      const masteryEstimate = Math.round((stats.correct / stats.total) * 100);
+      const masteryEstimate = Math.round((row.correct / row.total) * 100);
       return {
         content: [
           {
@@ -189,9 +220,9 @@ server.tool(
               {
                 user_id,
                 objective,
-                correct: stats.correct,
-                total: stats.total,
-                current_score: `${stats.correct}/${stats.total}`,
+                correct: row.correct,
+                total: row.total,
+                current_score: `${row.correct}/${row.total}`,
                 mastery_estimate: `${masteryEstimate}%`,
               },
               null,
@@ -203,24 +234,15 @@ server.tool(
     }
 
     // Return all objectives
-    const objectives: Array<{
-      objective: string;
-      correct: number;
-      total: number;
-      current_score: string;
-      mastery_estimate: string;
-    }> = [];
+    const rows = getAllObjectives.all(user_id) as Array<{ objective: string; correct: number; total: number }>;
 
-    for (const [obj, stats] of userMastery.entries()) {
-      const masteryEstimate = Math.round((stats.correct / stats.total) * 100);
-      objectives.push({
-        objective: obj,
-        correct: stats.correct,
-        total: stats.total,
-        current_score: `${stats.correct}/${stats.total}`,
-        mastery_estimate: `${masteryEstimate}%`,
-      });
-    }
+    const objectives = rows.map((row) => ({
+      objective: row.objective,
+      correct: row.correct,
+      total: row.total,
+      current_score: `${row.correct}/${row.total}`,
+      mastery_estimate: `${Math.round((row.correct / row.total) * 100)}%`,
+    }));
 
     return {
       content: [
@@ -229,7 +251,7 @@ server.tool(
           text: JSON.stringify(
             {
               user_id,
-              objectives: objectives.length > 0 ? objectives : [],
+              objectives,
               message: objectives.length === 0 ? "No mastery data found for this user" : undefined,
             },
             null,
@@ -293,12 +315,14 @@ async function main() {
       console.error(`MCQMCP server running on http://localhost:${port}`);
       console.error(`SSE endpoint: http://localhost:${port}/sse`);
       console.error(`Messages endpoint: http://localhost:${port}/messages`);
+      console.error(`Database: ${join(dataDir, "mcqmcp.db")}`);
     });
   } else {
     // Stdio transport (default)
     const transport = new StdioServerTransport();
     await server.connect(transport);
     console.error("MCQMCP server running on stdio");
+    console.error(`Database: ${join(dataDir, "mcqmcp.db")}`);
   }
 }
 
