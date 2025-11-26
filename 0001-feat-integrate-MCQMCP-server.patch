@@ -1,0 +1,617 @@
+From ef24a55b6e306b866bdd720396415712d7a96dfc Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Wed, 26 Nov 2025 13:01:38 +0000
+Subject: [PATCH] feat: integrate MCQMCP server
+
+Add MCP client integration for MCQ generation and mastery tracking:
+
+- src/lib/mcp/client.ts: MCP client wrapper with SSE transport
+- src/lib/mcp/hooks.ts: React hooks (useGenerateMCQ, useRecordResponse, useMasteryStatus)
+- src/app/api/mcp/route.ts: API route for proxying MCP calls
+- src/components/MCQDemo.tsx: Demo component showing integration
+- Update page.tsx with MCQDemo
+- Add @modelcontextprotocol/sdk dependency
+---
+ package.json               |   1 +
+ src/app/api/mcp/route.ts   |  56 ++++++++++++++
+ src/app/page.tsx           |  78 ++++++--------------
+ src/components/MCQDemo.tsx | 141 +++++++++++++++++++++++++++++++++++
+ src/lib/mcp/client.ts      |  94 ++++++++++++++++++++++++
+ src/lib/mcp/hooks.ts       | 147 +++++++++++++++++++++++++++++++++++++
+ src/lib/mcp/index.ts       |  15 ++++
+ 7 files changed, 475 insertions(+), 57 deletions(-)
+ create mode 100644 src/app/api/mcp/route.ts
+ create mode 100644 src/components/MCQDemo.tsx
+ create mode 100644 src/lib/mcp/client.ts
+ create mode 100644 src/lib/mcp/hooks.ts
+ create mode 100644 src/lib/mcp/index.ts
+
+diff --git a/package.json b/package.json
+index 5e76fd4..eded8c9 100644
+--- a/package.json
++++ b/package.json
+@@ -10,6 +10,7 @@
+   },
+   "dependencies": {
+     "@anthropic-ai/sdk": "^0.71.0",
++    "@modelcontextprotocol/sdk": "^1.0.0",
+     "better-sqlite3": "^12.4.6",
+     "next": "16.0.4",
+     "react": "19.2.0",
+diff --git a/src/app/api/mcp/route.ts b/src/app/api/mcp/route.ts
+new file mode 100644
+index 0000000..6f19bc6
+--- /dev/null
++++ b/src/app/api/mcp/route.ts
+@@ -0,0 +1,56 @@
++import { NextRequest, NextResponse } from "next/server";
++import { generateMCQ, recordMCQResponse, getMasteryStatus } from "@/lib/mcp/client";
++
++export async function POST(request: NextRequest) {
++  try {
++    const body = await request.json();
++    const { action, userId, objective, difficulty, selectedAnswer, correctAnswer } = body;
++
++    switch (action) {
++      case "generate": {
++        if (!userId || !objective || !difficulty) {
++          return NextResponse.json(
++            { error: "Missing required fields: userId, objective, difficulty" },
++            { status: 400 }
++          );
++        }
++        const result = await generateMCQ(userId, objective, difficulty);
++        return NextResponse.json(result);
++      }
++
++      case "record": {
++        if (!userId || !objective || !selectedAnswer || !correctAnswer) {
++          return NextResponse.json(
++            { error: "Missing required fields: userId, objective, selectedAnswer, correctAnswer" },
++            { status: 400 }
++          );
++        }
++        const result = await recordMCQResponse(userId, objective, selectedAnswer, correctAnswer);
++        return NextResponse.json(result);
++      }
++
++      case "status": {
++        if (!userId) {
++          return NextResponse.json(
++            { error: "Missing required field: userId" },
++            { status: 400 }
++          );
++        }
++        const result = await getMasteryStatus(userId, objective);
++        return NextResponse.json(result);
++      }
++
++      default:
++        return NextResponse.json(
++          { error: "Invalid action. Use: generate, record, or status" },
++          { status: 400 }
++        );
++    }
++  } catch (error) {
++    console.error("MCP API error:", error);
++    return NextResponse.json(
++      { error: error instanceof Error ? error.message : "Internal server error" },
++      { status: 500 }
++    );
++  }
++}
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index 295f8fd..f3bfc9c 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -1,65 +1,29 @@
+-import Image from "next/image";
++import { MCQDemo } from "@/components/MCQDemo";
+ 
+ export default function Home() {
+   return (
+-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
+-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
+-        <Image
+-          className="dark:invert"
+-          src="/next.svg"
+-          alt="Next.js logo"
+-          width={100}
+-          height={20}
+-          priority
+-        />
+-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
+-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
+-            To get started, edit the page.tsx file.
++    <div className="min-h-screen bg-zinc-50 dark:bg-black py-12 px-4">
++      <div className="max-w-2xl mx-auto">
++        <header className="text-center mb-8">
++          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
++            MCQ Assessment
+           </h1>
+-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
+-            Looking for a starting point or more instructions? Head over to{" "}
+-            <a
+-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+-              className="font-medium text-zinc-950 dark:text-zinc-50"
+-            >
+-              Templates
+-            </a>{" "}
+-            or the{" "}
+-            <a
+-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+-              className="font-medium text-zinc-950 dark:text-zinc-50"
+-            >
+-              Learning
+-            </a>{" "}
+-            center.
++          <p className="mt-2 text-zinc-600 dark:text-zinc-400">
++            Powered by MCQMCP Server
+           </p>
+-        </div>
+-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
+-          <a
+-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
+-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+-            target="_blank"
+-            rel="noopener noreferrer"
+-          >
+-            <Image
+-              className="dark:invert"
+-              src="/vercel.svg"
+-              alt="Vercel logomark"
+-              width={16}
+-              height={16}
+-            />
+-            Deploy Now
+-          </a>
+-          <a
+-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
+-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+-            target="_blank"
+-            rel="noopener noreferrer"
+-          >
+-            Documentation
+-          </a>
+-        </div>
+-      </main>
++        </header>
++
++        <MCQDemo />
++
++        <footer className="mt-12 text-center text-sm text-zinc-500">
++          <p>
++            MCP Server:{" "}
++            <code className="bg-zinc-200 dark:bg-zinc-800 px-1 rounded">
++              mcqmcp.onrender.com
++            </code>
++          </p>
++        </footer>
++      </div>
+     </div>
+   );
+ }
+diff --git a/src/components/MCQDemo.tsx b/src/components/MCQDemo.tsx
+new file mode 100644
+index 0000000..793b2e0
+--- /dev/null
++++ b/src/components/MCQDemo.tsx
+@@ -0,0 +1,141 @@
++"use client";
++
++import { useState } from "react";
++import { useGenerateMCQ, useRecordResponse, useMasteryStatus } from "@/lib/mcp";
++
++export function MCQDemo() {
++  const [userId] = useState(() => `user_${Math.random().toString(36).slice(2, 9)}`);
++  const [objective, setObjective] = useState("Understanding JavaScript async/await");
++  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium");
++  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
++  const [showResult, setShowResult] = useState(false);
++
++  const { question, loading: genLoading, error: genError, generate } = useGenerateMCQ();
++  const { result, loading: recordLoading, record } = useRecordResponse();
++  const { status, loading: statusLoading, fetchStatus } = useMasteryStatus();
++
++  const handleGenerate = async () => {
++    setSelectedAnswer(null);
++    setShowResult(false);
++    await generate(userId, objective, difficulty);
++  };
++
++  const handleAnswer = async (answer: string) => {
++    if (!question || selectedAnswer) return;
++    setSelectedAnswer(answer);
++    const res = await record(userId, objective, answer, question.correct_answer);
++    if (res) {
++      setShowResult(true);
++      await fetchStatus(userId);
++    }
++  };
++
++  return (
++    <div className="w-full max-w-2xl mx-auto p-6 space-y-6">
++      <div className="bg-zinc-100 dark:bg-zinc-900 rounded-lg p-4 space-y-4">
++        <h2 className="text-lg font-semibold">MCQ Demo</h2>
++        <p className="text-sm text-zinc-600 dark:text-zinc-400">
++          User ID: <code className="bg-zinc-200 dark:bg-zinc-800 px-1 rounded">{userId}</code>
++        </p>
++
++        <div className="space-y-2">
++          <label className="block text-sm font-medium">Learning Objective</label>
++          <input
++            type="text"
++            value={objective}
++            onChange={(e) => setObjective(e.target.value)}
++            className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-zinc-800 dark:border-zinc-700"
++          />
++        </div>
++
++        <div className="space-y-2">
++          <label className="block text-sm font-medium">Difficulty</label>
++          <select
++            value={difficulty}
++            onChange={(e) => setDifficulty(e.target.value as "easy" | "medium" | "hard")}
++            className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-zinc-800 dark:border-zinc-700"
++          >
++            <option value="easy">Easy</option>
++            <option value="medium">Medium</option>
++            <option value="hard">Hard</option>
++          </select>
++        </div>
++
++        <button
++          onClick={handleGenerate}
++          disabled={genLoading}
++          className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
++        >
++          {genLoading ? "Generating..." : "Generate Question"}
++        </button>
++
++        {genError && (
++          <p className="text-red-500 text-sm">{genError}</p>
++        )}
++      </div>
++
++      {question && (
++        <div className="bg-white dark:bg-zinc-900 border dark:border-zinc-700 rounded-lg p-6 space-y-4">
++          <h3 className="font-medium text-lg">{question.question}</h3>
++
++          <div className="space-y-2">
++            {Object.entries(question.options).map(([key, text]) => {
++              const isSelected = selectedAnswer === key;
++              const isCorrect = showResult && key === question.correct_answer;
++              const isWrong = showResult && isSelected && key !== question.correct_answer;
++
++              return (
++                <button
++                  key={key}
++                  onClick={() => handleAnswer(key)}
++                  disabled={!!selectedAnswer || recordLoading}
++                  className={`w-full text-left px-4 py-3 border rounded-lg transition-colors ${
++                    isCorrect
++                      ? "bg-green-100 border-green-500 dark:bg-green-900/30"
++                      : isWrong
++                      ? "bg-red-100 border-red-500 dark:bg-red-900/30"
++                      : isSelected
++                      ? "bg-blue-100 border-blue-500 dark:bg-blue-900/30"
++                      : "hover:bg-zinc-50 dark:hover:bg-zinc-800"
++                  }`}
++                >
++                  <span className="font-medium">{key}.</span> {text}
++                </button>
++              );
++            })}
++          </div>
++
++          {showResult && result && (
++            <div className={`p-4 rounded-lg ${result.was_correct ? "bg-green-50 dark:bg-green-900/20" : "bg-red-50 dark:bg-red-900/20"}`}>
++              <p className="font-medium">
++                {result.was_correct ? "Correct!" : "Incorrect"}
++              </p>
++              <p className="text-sm mt-1">{question.explanation}</p>
++              <p className="text-sm mt-2 text-zinc-600 dark:text-zinc-400">
++                Score: {result.current_score} • Mastery: {result.mastery_estimate}
++              </p>
++            </div>
++          )}
++        </div>
++      )}
++
++      {status && status.objectives && status.objectives.length > 0 && (
++        <div className="bg-zinc-100 dark:bg-zinc-900 rounded-lg p-4">
++          <h3 className="font-medium mb-3">Your Progress</h3>
++          <div className="space-y-2">
++            {status.objectives.map((obj) => (
++              <div key={obj.objective} className="flex justify-between items-center text-sm">
++                <span className="truncate flex-1">{obj.objective}</span>
++                <span className="ml-4 font-mono">{obj.mastery_estimate}</span>
++              </div>
++            ))}
++          </div>
++        </div>
++      )}
++
++      {statusLoading && (
++        <p className="text-sm text-zinc-500">Loading status...</p>
++      )}
++    </div>
++  );
++}
+diff --git a/src/lib/mcp/client.ts b/src/lib/mcp/client.ts
+new file mode 100644
+index 0000000..06dc688
+--- /dev/null
++++ b/src/lib/mcp/client.ts
+@@ -0,0 +1,94 @@
++import { Client } from "@modelcontextprotocol/sdk/client/index.js";
++import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
++
++const MCP_URL = process.env.NEXT_PUBLIC_MCP_URL || "https://mcqmcp.onrender.com/sse";
++
++let clientPromise: Promise<Client> | null = null;
++
++export async function getMCPClient(): Promise<Client> {
++  if (!clientPromise) {
++    clientPromise = (async () => {
++      const transport = new SSEClientTransport(new URL(MCP_URL));
++      const client = new Client({ name: "claude-mcq-assessment", version: "1.0.0" });
++      await client.connect(transport);
++      return client;
++    })();
++  }
++  return clientPromise;
++}
++
++export interface MCQQuestion {
++  user_id: string;
++  objective: string;
++  difficulty: string;
++  question: string;
++  options: Record<string, string>;
++  correct_answer: string;
++  explanation: string;
++}
++
++export interface MCQRecordResult {
++  user_id: string;
++  objective: string;
++  selected_answer: string;
++  correct_answer: string;
++  was_correct: boolean;
++  current_score: string;
++  mastery_estimate: string;
++}
++
++export interface MCQStatus {
++  user_id: string;
++  objectives: Array<{
++    objective: string;
++    correct: number;
++    total: number;
++    current_score: string;
++    mastery_estimate: string;
++  }>;
++  message?: string;
++}
++
++export async function generateMCQ(
++  userId: string,
++  objective: string,
++  difficulty: "easy" | "medium" | "hard"
++): Promise<MCQQuestion> {
++  const client = await getMCPClient();
++  const result = await client.callTool({
++    name: "mcq_generate",
++    arguments: { user_id: userId, objective, difficulty },
++  });
++  return JSON.parse((result.content[0] as { text: string }).text);
++}
++
++export async function recordMCQResponse(
++  userId: string,
++  objective: string,
++  selectedAnswer: string,
++  correctAnswer: string
++): Promise<MCQRecordResult> {
++  const client = await getMCPClient();
++  const result = await client.callTool({
++    name: "mcq_record",
++    arguments: {
++      user_id: userId,
++      objective,
++      selected_answer: selectedAnswer,
++      correct_answer: correctAnswer,
++    },
++  });
++  return JSON.parse((result.content[0] as { text: string }).text);
++}
++
++export async function getMasteryStatus(
++  userId: string,
++  objective?: string
++): Promise<MCQStatus> {
++  const client = await getMCPClient();
++  const result = await client.callTool({
++    name: "mcq_get_status",
++    arguments: objective ? { user_id: userId, objective } : { user_id: userId },
++  });
++  return JSON.parse((result.content[0] as { text: string }).text);
++}
+diff --git a/src/lib/mcp/hooks.ts b/src/lib/mcp/hooks.ts
+new file mode 100644
+index 0000000..e3c4aa4
+--- /dev/null
++++ b/src/lib/mcp/hooks.ts
+@@ -0,0 +1,147 @@
++"use client";
++
++import { useState, useCallback } from "react";
++import type { MCQQuestion, MCQRecordResult, MCQStatus } from "./client";
++
++interface UseGenerateMCQReturn {
++  question: MCQQuestion | null;
++  loading: boolean;
++  error: string | null;
++  generate: (userId: string, objective: string, difficulty: "easy" | "medium" | "hard") => Promise<MCQQuestion | null>;
++}
++
++export function useGenerateMCQ(): UseGenerateMCQReturn {
++  const [question, setQuestion] = useState<MCQQuestion | null>(null);
++  const [loading, setLoading] = useState(false);
++  const [error, setError] = useState<string | null>(null);
++
++  const generate = useCallback(async (
++    userId: string,
++    objective: string,
++    difficulty: "easy" | "medium" | "hard"
++  ): Promise<MCQQuestion | null> => {
++    setLoading(true);
++    setError(null);
++    try {
++      const res = await fetch("/api/mcp", {
++        method: "POST",
++        headers: { "Content-Type": "application/json" },
++        body: JSON.stringify({ action: "generate", userId, objective, difficulty }),
++      });
++      if (!res.ok) {
++        const data = await res.json();
++        throw new Error(data.error || "Failed to generate question");
++      }
++      const data = await res.json();
++      setQuestion(data);
++      return data;
++    } catch (err) {
++      const message = err instanceof Error ? err.message : "Unknown error";
++      setError(message);
++      return null;
++    } finally {
++      setLoading(false);
++    }
++  }, []);
++
++  return { question, loading, error, generate };
++}
++
++interface UseRecordResponseReturn {
++  result: MCQRecordResult | null;
++  loading: boolean;
++  error: string | null;
++  record: (
++    userId: string,
++    objective: string,
++    selectedAnswer: string,
++    correctAnswer: string
++  ) => Promise<MCQRecordResult | null>;
++}
++
++export function useRecordResponse(): UseRecordResponseReturn {
++  const [result, setResult] = useState<MCQRecordResult | null>(null);
++  const [loading, setLoading] = useState(false);
++  const [error, setError] = useState<string | null>(null);
++
++  const record = useCallback(async (
++    userId: string,
++    objective: string,
++    selectedAnswer: string,
++    correctAnswer: string
++  ): Promise<MCQRecordResult | null> => {
++    setLoading(true);
++    setError(null);
++    try {
++      const res = await fetch("/api/mcp", {
++        method: "POST",
++        headers: { "Content-Type": "application/json" },
++        body: JSON.stringify({
++          action: "record",
++          userId,
++          objective,
++          selectedAnswer,
++          correctAnswer,
++        }),
++      });
++      if (!res.ok) {
++        const data = await res.json();
++        throw new Error(data.error || "Failed to record response");
++      }
++      const data = await res.json();
++      setResult(data);
++      return data;
++    } catch (err) {
++      const message = err instanceof Error ? err.message : "Unknown error";
++      setError(message);
++      return null;
++    } finally {
++      setLoading(false);
++    }
++  }, []);
++
++  return { result, loading, error, record };
++}
++
++interface UseMasteryStatusReturn {
++  status: MCQStatus | null;
++  loading: boolean;
++  error: string | null;
++  fetchStatus: (userId: string, objective?: string) => Promise<MCQStatus | null>;
++}
++
++export function useMasteryStatus(): UseMasteryStatusReturn {
++  const [status, setStatus] = useState<MCQStatus | null>(null);
++  const [loading, setLoading] = useState(false);
++  const [error, setError] = useState<string | null>(null);
++
++  const fetchStatus = useCallback(async (
++    userId: string,
++    objective?: string
++  ): Promise<MCQStatus | null> => {
++    setLoading(true);
++    setError(null);
++    try {
++      const res = await fetch("/api/mcp", {
++        method: "POST",
++        headers: { "Content-Type": "application/json" },
++        body: JSON.stringify({ action: "status", userId, objective }),
++      });
++      if (!res.ok) {
++        const data = await res.json();
++        throw new Error(data.error || "Failed to fetch status");
++      }
++      const data = await res.json();
++      setStatus(data);
++      return data;
++    } catch (err) {
++      const message = err instanceof Error ? err.message : "Unknown error";
++      setError(message);
++      return null;
++    } finally {
++      setLoading(false);
++    }
++  }, []);
++
++  return { status, loading, error, fetchStatus };
++}
+diff --git a/src/lib/mcp/index.ts b/src/lib/mcp/index.ts
+new file mode 100644
+index 0000000..458e0fe
+--- /dev/null
++++ b/src/lib/mcp/index.ts
+@@ -0,0 +1,15 @@
++export {
++  getMCPClient,
++  generateMCQ,
++  recordMCQResponse,
++  getMasteryStatus,
++  type MCQQuestion,
++  type MCQRecordResult,
++  type MCQStatus,
++} from "./client";
++
++export {
++  useGenerateMCQ,
++  useRecordResponse,
++  useMasteryStatus,
++} from "./hooks";
+-- 
+2.43.0
+
