@@ -16,8 +16,5 @@ RUN npm run build
 RUN mkdir -p /data
 
 ENV MCQMCP_DATA_DIR=/data
-ENV PORT=3000
-
-EXPOSE 3000
 
 CMD ["node", "dist/index.js", "--http"]
