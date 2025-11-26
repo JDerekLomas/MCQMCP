@@ -2,6 +2,15 @@
 
 MCP server for MCQ (Multiple Choice Question) generation and mastery tracking.
 
+> **Why this exists:** LLMs tutor millions but can't verify learning happened. MCQMCP gives LLMs the ability to check understanding with structured assessment.
+
+See [SPEC.md](SPEC.md) for the full vision including XP, badges, skill hierarchies, and item banks.
+
+## Status
+
+**Current:** Minimal working server with basic mastery tracking
+**Planned:** Full spec with skills, items, XP system, widgets
+
 ## Live Server
 
 **URL:** `https://mcqmcp.onrender.com/sse`
