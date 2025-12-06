@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "sessionId": "3833ad67-18ce-4b3a-b0d9-3e0b935f3a03",
+  "learnerProfile": {
+    "id": "3833ad67-18ce-4b3a-b0d9-3e0b935f3a03",
+    "totalQuestionsAnswered": 4,
+    "totalCorrect": 2,
+    "longestStreak": 2,
+    "currentStreak": 0,
+    "createdAt": "2025-11-25T12:44:22.645Z",
+    "updatedAt": "2025-11-25T14:56:08.648Z"
+  },
+  "conversations": [],
+  "currentConversationId": "9f175b3b-07d2-480f-aca3-c52686583b0b",
+  "learningModeEnabled": false,
+  "updatedAt": "2025-11-25T15:16:38.912Z"
+}

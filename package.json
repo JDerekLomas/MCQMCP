@@ -1,24 +1,22 @@
 {
-  "name": "mcqmcp",
+  "name": "mcqmcp-monorepo",
   "version": "0.1.0",
-  "description": "MCP server for MCQ generation and mastery tracking",
-  "type": "module",
-  "main": "dist/index.js",
-  "bin": {
-    "mcqmcp": "./dist/index.js"
-  },
+  "private": true,
+  "description": "MCQMCP - Assessment infrastructure for AI tutoring",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "start:http": "node dist/index.js --http"
+    "dev:server": "npm run dev -w packages/server",
+    "dev:website": "npm run dev -w packages/website",
+    "build:server": "npm run build -w packages/server",
+    "build:website": "npm run build -w packages/website",
+    "build": "npm run build:server && npm run build:website"
   },
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0",
-    "@supabase/supabase-js": "^2.45.0",
-    "zod": "^3.23.0"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JDerekLomas/MCQMCP.git"
   },
-  "devDependencies": {
-    "@types/node": "^20.0.0",
-    "typescript": "^5.0.0"
-  }
+  "author": "Derek Lomas",
+  "license": "MIT"
 }

@@ -1,0 +1,608 @@
+[
+  {
+    "type": "generated_item",
+    "item": {
+      "id": "generated-react-hooks-1734914820",
+      "topic": "react-hooks",
+      "difficulty": "medium",
+      "stem": "What will be logged to the console when the button is clicked?",
+      "code": "import React, { useState } from 'react';\n\nfunction Counter() {\n  const [count, setCount] = useState(0);\n  \n  const handleClick = () => {\n    setCount(count + 1);\n    setCount(count + 1);\n    console.log(count);\n  };\n  \n  return <button onClick={handleClick}>Count: {count}</button>;\n}",
+      "options": [
+        {
+          "id": "A",
+          "text": "0 (then count becomes 1)"
+        },
+        {
+          "id": "B",
+          "text": "1 (then count becomes 2)"
+        },
+        {
+          "id": "C",
+          "text": "2 (then count becomes 2)"
+        },
+        {
+          "id": "D",
+          "text": "0 (then count becomes 2)"
+        }
+      ],
+      "correct": "D",
+      "feedback": {
+        "correct": "Excellent! You understand React's state batching behavior.",
+        "incorrect": "Not quite! Remember that state updates are asynchronous and batched.",
+        "explanation": "The console.log(count) executes immediately and shows the current value (0) before any state updates are applied. React batches the two setCount calls, but since both use the same stale value (count = 0), the final count becomes 1, not 2. To increment twice, you'd need setCount(prev => prev + 1) twice."
+      }
+    },
+    "timestamp": "2025-11-25T11:39:46.826Z",
+    "session_id": "731c4135-b439-48d7-9041-dc11a35ef2ae"
+  },
+  {
+    "type": "generated_item",
+    "item": {
+      "id": "generated-react-basics-1734567890",
+      "topic": "react-basics",
+      "difficulty": "easy",
+      "stem": "In React, what is a component?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A JavaScript function or class that returns HTML-like syntax"
+        },
+        {
+          "id": "B",
+          "text": "A CSS file that styles your application"
+        },
+        {
+          "id": "C",
+          "text": "A database that stores your application data"
+        },
+        {
+          "id": "D",
+          "text": "A server that handles HTTP requests"
+        }
+      ],
+      "correct": "A",
+      "feedback": {
+        "correct": "Exactly right!",
+        "incorrect": "Not quite.",
+        "explanation": "A React component is a JavaScript function or class that returns JSX (HTML-like syntax) to describe what should appear on the screen."
+      }
+    },
+    "timestamp": "2025-11-25T11:51:52.114Z",
+    "session_id": "879573cc-493e-4f12-a8da-0c7e3f719b58"
+  },
+  {
+    "type": "generated_item",
+    "item": {
+      "id": "generated-react-state-1734624890",
+      "topic": "react-state",
+      "difficulty": "easy",
+      "stem": "What happens when you call setState() in a React component?",
+      "options": [
+        {
+          "id": "A",
+          "text": "The component re-renders immediately and synchronously"
+        },
+        {
+          "id": "B",
+          "text": "React schedules a re-render and the component updates asynchronously"
+        },
+        {
+          "id": "C",
+          "text": "Nothing happens until you refresh the page"
+        },
+        {
+          "id": "D",
+          "text": "The entire page reloads"
+        }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! React batches state updates and re-renders asynchronously for performance.",
+        "incorrect": "Not quite - React doesn't update immediately or reload pages.",
+        "explanation": "React schedules updates and batches them for optimal performance, making re-renders asynchronous."
+      }
+    },
+    "timestamp": "2025-11-25T11:52:15.643Z",
+    "session_id": "879573cc-493e-4f12-a8da-0c7e3f719b58"
+  },
+  {
+    "type": "generated_item",
+    "item": {
+      "id": "generated-react-state-1734583920",
+      "topic": "react-state",
+      "difficulty": "easy",
+      "stem": "What happens when you call setState in a React component?",
+      "code": "const [count, setCount] = useState(0);\n\nconst handleClick = () => {\n  setCount(count + 1);\n  console.log(count);\n};",
+      "options": [
+        {
+          "id": "A",
+          "text": "The console.log will show the updated count value immediately"
+        },
+        {
+          "id": "B",
+          "text": "The console.log will show the old count value, but the component will re-render with the new value"
+        },
+        {
+          "id": "C",
+          "text": "The component will not re-render until the next page refresh"
+        },
+        {
+          "id": "D",
+          "text": "An error will occur because you can't call console.log after setState"
+        }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Exactly! State updates are asynchronous, so console.log shows the old value, but React schedules a re-render with the new value.",
+        "incorrect": "State updates in React are asynchronous - the console.log runs before the state actually updates, but React will re-render the component with the new value.",
+        "explanation": "This is a key concept: setState is asynchronous, so the old value is logged, but the component re-renders with the updated state."
+      }
+    },
+    "timestamp": "2025-11-25T11:52:43.672Z",
+    "session_id": "879573cc-493e-4f12-a8da-0c7e3f719b58"
+  },
+  {
+    "type": "generated_item",
+    "item": {
+      "id": "generated-react-4-1734579236",
+      "topic": "react-hooks",
+      "difficulty": "easy",
+      "stem": "Which React hook would you use to perform side effects like API calls?",
+      "options": [
+        {
+          "id": "A",
+          "text": "useState"
+        },
+        {
+          "id": "B",
+          "text": "useEffect"
+        },
+        {
+          "id": "C",
+          "text": "useContext"
+        },
+        {
+          "id": "D",
+          "text": "useReducer"
+        }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Perfect! useEffect is specifically designed for side effects",
+        "incorrect": "useEffect is the hook for side effects like API calls, subscriptions, and cleanup",
+        "explanation": "useEffect runs after render and is where you handle side effects that don't belong in the render phase"
+      }
+    },
+    "timestamp": "2025-11-25T11:54:52.142Z",
+    "session_id": "879573cc-493e-4f12-a8da-0c7e3f719b58"
+  },
+  {
+    "type": "generated_item",
+    "item": {
+      "id": "generated-react-basics-1735059600",
+      "topic": "react-basics",
+      "difficulty": "easy",
+      "stem": "What is JSX in React?",
+      "code": "",
+      "options": [
+        {
+          "id": "A",
+          "text": "A JavaScript library for making HTTP requests"
+        },
+        {
+          "id": "B",
+          "text": "A syntax extension that allows you to write HTML-like code in JavaScript"
+        },
+        {
+          "id": "C",
+          "text": "A CSS framework for styling React components"
+        },
+        {
+          "id": "D",
+          "text": "A database query language for React applications"
+        }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Exactly! JSX lets you write HTML-like syntax directly in your JavaScript code.",
+        "incorrect": "Not quite. JSX is about writing HTML-like syntax in JavaScript.",
+        "explanation": "JSX (JavaScript XML) is a syntax extension that allows you to write HTML-like code within JavaScript, making it easier to create React elements."
+      }
+    },
+    "timestamp": "2025-11-25T12:07:53.143Z",
+    "session_id": "b05c48b6-ace7-4514-9e96-2cc616532e1b"
+  },
+  {
+    "type": "generated_item",
+    "item": {
+      "id": "generated-react-components-1734647892",
+      "topic": "react-components",
+      "difficulty": "easy",
+      "stem": "In React, what is the correct way to define a functional component called 'Welcome'?",
+      "code": "",
+      "options": [
+        {
+          "id": "A",
+          "text": "function Welcome() { return <div>Hello</div>; }"
+        },
+        {
+          "id": "B",
+          "text": "const Welcome = () => { return <div>Hello</div>; }"
+        },
+        {
+          "id": "C",
+          "text": "Both A and B are correct"
+        },
+        {
+          "id": "D",
+          "text": "class Welcome extends Component { render() { return <div>Hello</div>; } }"
+        }
+      ],
+      "correct": "C",
+      "feedback": {
+        "correct": "Both function declarations and arrow functions are valid ways to create functional components",
+        "incorrect": "Both function declarations and arrow functions work for functional components",
+        "explanation": "React functional components can be written as either regular functions or arrow functions. Both syntaxes are commonly used and valid."
+      }
+    },
+    "timestamp": "2025-11-25T12:08:20.297Z",
+    "session_id": "b05c48b6-ace7-4514-9e96-2cc616532e1b"
+  },
+  {
+    "type": "generated_item",
+    "item": {
+      "id": "generated-react-basics-1735078234",
+      "topic": "react-basics",
+      "difficulty": "easy",
+      "stem": "What is JSX in React?",
+      "code": "",
+      "options": [
+        {
+          "id": "A",
+          "text": "A JavaScript library for making HTTP requests"
+        },
+        {
+          "id": "B",
+          "text": "A syntax extension that allows you to write HTML-like code in JavaScript"
+        },
+        {
+          "id": "C",
+          "text": "A React component lifecycle method"
+        },
+        {
+          "id": "D",
+          "text": "A state management tool for React applications"
+        }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Exactly right! JSX makes React components much more readable.",
+        "incorrect": "Not quite. JSX is about syntax, not functionality.",
+        "explanation": "JSX (JavaScript XML) is a syntax extension that lets you write HTML-like markup inside JavaScript files, making React components easier to read and write."
+      }
+    },
+    "timestamp": "2025-11-25T12:14:00.171Z",
+    "session_id": "67868308-c28c-4bf8-8b45-268bdab11be1"
+  },
+  {
+    "type": "generated_item",
+    "item": {
+      "id": "generated-react-basics-props-1734998400",
+      "topic": "react-basics",
+      "difficulty": "easy",
+      "stem": "How do you pass data from a parent component to a child component in React?",
+      "code": "",
+      "options": [
+        {
+          "id": "A",
+          "text": "Using state"
+        },
+        {
+          "id": "B",
+          "text": "Using props"
+        },
+        {
+          "id": "C",
+          "text": "Using refs"
+        },
+        {
+          "id": "D",
+          "text": "Using context"
+        }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Props are the primary way to pass data down from parent to child components.",
+        "incorrect": "Not quite. While state, refs, and context have their uses, props are the standard way to pass data from parent to child.",
+        "explanation": "Props (short for properties) are how you pass data and event handlers down the component tree from parent to child components."
+      }
+    },
+    "timestamp": "2025-11-25T12:17:07.355Z",
+    "session_id": "67868308-c28c-4bf8-8b45-268bdab11be1"
+  },
+  {
+    "type": "generated_item",
+    "item": {
+      "id": "generated-react-basics-3",
+      "topic": "react-basics",
+      "difficulty": "easy",
+      "stem": "What happens when you call setState or a state setter function in React?",
+      "code": "const [count, setCount] = useState(0);\n\nfunction handleClick() {\n  setCount(count + 1);\n}",
+      "options": [
+        {
+          "id": "A",
+          "text": "The component immediately updates"
+        },
+        {
+          "id": "B",
+          "text": "The component re-renders"
+        },
+        {
+          "id": "C",
+          "text": "The state changes but nothing else happens"
+        },
+        {
+          "id": "D",
+          "text": "An error occurs"
+        }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Exactly right!",
+        "incorrect": "Not quite.",
+        "explanation": "When state changes, React schedules a re-render of the component to reflect the new state in the UI."
+      }
+    },
+    "timestamp": "2025-11-25T12:17:39.567Z",
+    "session_id": "67868308-c28c-4bf8-8b45-268bdab11be1"
+  },
+  {
+    "type": "generated_item",
+    "item": {
+      "id": "generated-react-components-1734847290",
+      "topic": "react-components",
+      "difficulty": "easy",
+      "stem": "In React, what is a component?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A JavaScript function or class that returns HTML-like code"
+        },
+        {
+          "id": "B",
+          "text": "A CSS file that styles your webpage"
+        },
+        {
+          "id": "C",
+          "text": "A database that stores user information"
+        },
+        {
+          "id": "D",
+          "text": "A server that handles HTTP requests"
+        }
+      ],
+      "correct": "A",
+      "feedback": {
+        "correct": "Exactly! Components are the building blocks of React apps.",
+        "incorrect": "Not quite - think about what React components actually do.",
+        "explanation": "React components are JavaScript functions or classes that return JSX (HTML-like code), making them reusable pieces of UI."
+      }
+    },
+    "timestamp": "2025-11-25T12:21:19.918Z",
+    "session_id": "4bfa2e71-06ad-46c9-bcae-e8eaa3afff57"
+  },
+  {
+    "type": "generated_item",
+    "item": {
+      "id": "generated-react-jsx-1734542890",
+      "topic": "react-jsx",
+      "difficulty": "easy",
+      "stem": "What does JSX stand for in React?",
+      "code": "",
+      "options": [
+        {
+          "id": "A",
+          "text": "JavaScript XML"
+        },
+        {
+          "id": "B",
+          "text": "Java Syntax Extension"
+        },
+        {
+          "id": "C",
+          "text": "JavaScript eXtension"
+        },
+        {
+          "id": "D",
+          "text": "Just Syntax eXtended"
+        }
+      ],
+      "correct": "A",
+      "feedback": {
+        "correct": "JSX stands for JavaScript XML and allows you to write HTML-like syntax in JavaScript",
+        "incorrect": "JSX stands for JavaScript XML, not the other options",
+        "explanation": "JSX (JavaScript XML) is a syntax extension that lets you write HTML-like code within JavaScript, making React components more readable"
+      }
+    },
+    "timestamp": "2025-11-25T12:22:45.406Z",
+    "session_id": "4bfa2e71-06ad-46c9-bcae-e8eaa3afff57"
+  },
+  {
+    "type": "generated_item",
+    "item": {
+      "id": "generated-react-props-1734920400",
+      "topic": "react-props",
+      "difficulty": "easy",
+      "stem": "In React, what are props used for?",
+      "code": "function Welcome(props) {\n  return <h1>Hello, {props.name}!</h1>;\n}",
+      "options": [
+        {
+          "id": "A",
+          "text": "To pass data from parent to child components"
+        },
+        {
+          "id": "B",
+          "text": "To store component's internal state"
+        },
+        {
+          "id": "C",
+          "text": "To handle user events like clicks"
+        },
+        {
+          "id": "D",
+          "text": "To style components with CSS"
+        }
+      ],
+      "correct": "A",
+      "feedback": {
+        "correct": "Correct! Props are how you pass data down from parent components to child components.",
+        "incorrect": "Not quite. Props are specifically for passing data from parent to child components.",
+        "explanation": "Props (short for properties) are React's way of passing data and configuration from parent components down to their children, making components reusable."
+      }
+    },
+    "timestamp": "2025-11-25T12:23:05.896Z",
+    "session_id": "4bfa2e71-06ad-46c9-bcae-e8eaa3afff57"
+  },
+  {
+    "type": "generated_item",
+    "item": {
+      "id": "generated-optics-1732285743",
+      "topic": "optical-physics",
+      "difficulty": "easy",
+      "stem": "What causes white light to separate into a rainbow of colors when it passes through a prism?",
+      "code": "",
+      "options": [
+        {
+          "id": "A",
+          "text": "Different colors travel at different speeds through the glass"
+        },
+        {
+          "id": "B",
+          "text": "The prism adds colors that weren't originally in the light"
+        },
+        {
+          "id": "C",
+          "text": "The glass absorbs some wavelengths and reflects others"
+        },
+        {
+          "id": "D",
+          "text": "The prism converts white photons into colored photons"
+        }
+      ],
+      "correct": "A",
+      "feedback": {
+        "correct": "Exactly right! This is called dispersion.",
+        "incorrect": "Not quite - the colors were already in the white light.",
+        "explanation": "White light contains all colors mixed together. When it enters glass, different wavelengths (colors) bend at slightly different angles because they travel at different speeds through the material. This separates them into the visible spectrum."
+      }
+    },
+    "timestamp": "2025-11-25T14:54:02.433Z",
+    "session_id": "3833ad67-18ce-4b3a-b0d9-3e0b935f3a03"
+  },
+  {
+    "type": "generated_item",
+    "item": {
+      "id": "generated-optics-1734983420",
+      "topic": "optical-physics",
+      "difficulty": "medium",
+      "stem": "A spectrometer is a device that separates light into its component wavelengths. What is the primary advantage of using a diffraction grating instead of a prism in a spectrometer?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Diffraction gratings are much cheaper to manufacture"
+        },
+        {
+          "id": "B",
+          "text": "Diffraction gratings provide better wavelength resolution and linear dispersion"
+        },
+        {
+          "id": "C",
+          "text": "Diffraction gratings work with a wider range of light intensities"
+        },
+        {
+          "id": "D",
+          "text": "Diffraction gratings don't require precise alignment"
+        }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Diffraction gratings provide superior wavelength resolution and create linear dispersion.",
+        "incorrect": "Not quite. While cost and ease of use matter, the main advantage is technical performance.",
+        "explanation": "Diffraction gratings disperse light more evenly across wavelengths (linear dispersion) and can achieve much higher resolution than prisms, making them ideal for precise spectroscopic measurements."
+      }
+    },
+    "timestamp": "2025-11-25T14:54:27.621Z",
+    "session_id": "3833ad67-18ce-4b3a-b0d9-3e0b935f3a03"
+  },
+  {
+    "type": "generated_item",
+    "item": {
+      "id": "generated-optics-1731619200003",
+      "topic": "optical-physics",
+      "difficulty": "medium",
+      "stem": "In fiber optic communications, different wavelengths of light can be sent simultaneously through the same fiber. What is this technology called?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Wavelength Division Multiplexing (WDM)"
+        },
+        {
+          "id": "B",
+          "text": "Frequency Shift Keying (FSK)"
+        },
+        {
+          "id": "C",
+          "text": "Time Division Multiple Access (TDMA)"
+        },
+        {
+          "id": "D",
+          "text": "Amplitude Modulation (AM)"
+        }
+      ],
+      "correct": "A",
+      "feedback": {
+        "correct": "Exactly! WDM uses different wavelengths (colors) of light as separate channels",
+        "incorrect": "Not quite - this technique specifically uses different wavelengths as channels",
+        "explanation": "WDM allows multiple data streams to travel simultaneously by using different wavelengths of light, dramatically increasing fiber capacity"
+      }
+    },
+    "timestamp": "2025-11-25T14:54:53.957Z",
+    "session_id": "3833ad67-18ce-4b3a-b0d9-3e0b935f3a03"
+  },
+  {
+    "type": "generated_item",
+    "item": {
+      "id": "generated-optical-4-1703123456",
+      "topic": "optical-physics",
+      "difficulty": "medium",
+      "stem": "A spectrometer needs to distinguish between two very close wavelengths of light (like 589.0 nm and 589.6 nm from sodium). What property determines its ability to do this?",
+      "code": "",
+      "options": [
+        {
+          "id": "A",
+          "text": "Resolving power"
+        },
+        {
+          "id": "B",
+          "text": "Magnification factor"
+        },
+        {
+          "id": "C",
+          "text": "Light gathering ability"
+        },
+        {
+          "id": "D",
+          "text": "Dynamic range"
+        }
+      ],
+      "correct": "A",
+      "feedback": {
+        "correct": "Exactly right!",
+        "incorrect": "Not quite.",
+        "explanation": "Resolving power (λ/Δλ) determines how close two wavelengths can be while still being distinguished as separate peaks in the spectrum."
+      }
+    },
+    "timestamp": "2025-11-25T14:56:23.392Z",
+    "session_id": "3833ad67-18ce-4b3a-b0d9-3e0b935f3a03"
+  }
+]

@@ -1,0 +1,128 @@
+[
+  {
+    "item_id": "test-001",
+    "selected": "A",
+    "correct": "A",
+    "is_correct": true,
+    "latency_ms": 1500,
+    "timestamp": "2024-01-01T00:00:00Z",
+    "session_id": "test-session"
+  },
+  {
+    "item_id": "generated-react-hooks-1734914820",
+    "selected": "D",
+    "correct": "D",
+    "is_correct": true,
+    "latency_ms": 46570,
+    "timestamp": "2025-11-25T11:40:33.408Z",
+    "session_id": "731c4135-b439-48d7-9041-dc11a35ef2ae"
+  },
+  {
+    "item_id": "generated-react-basics-1734567890",
+    "selected": "A",
+    "correct": "A",
+    "is_correct": true,
+    "latency_ms": 12039,
+    "timestamp": "2025-11-25T11:52:04.167Z",
+    "session_id": "879573cc-493e-4f12-a8da-0c7e3f719b58"
+  },
+  {
+    "item_id": "generated-react-state-1734624890",
+    "selected": "C",
+    "correct": "B",
+    "is_correct": false,
+    "latency_ms": 13105,
+    "timestamp": "2025-11-25T11:52:28.757Z",
+    "session_id": "879573cc-493e-4f12-a8da-0c7e3f719b58"
+  },
+  {
+    "item_id": "generated-react-state-1734583920",
+    "selected": "B",
+    "correct": "B",
+    "is_correct": true,
+    "latency_ms": 116800,
+    "timestamp": "2025-11-25T11:54:40.527Z",
+    "session_id": "879573cc-493e-4f12-a8da-0c7e3f719b58"
+  },
+  {
+    "item_id": "generated-react-basics-1735059600",
+    "selected": "B",
+    "correct": "B",
+    "is_correct": true,
+    "latency_ms": 15683,
+    "timestamp": "2025-11-25T12:08:08.841Z",
+    "session_id": "b05c48b6-ace7-4514-9e96-2cc616532e1b"
+  },
+  {
+    "item_id": "generated-react-basics-1735078234",
+    "selected": "B",
+    "correct": "B",
+    "is_correct": true,
+    "latency_ms": 175482,
+    "timestamp": "2025-11-25T12:16:55.662Z",
+    "session_id": "67868308-c28c-4bf8-8b45-268bdab11be1"
+  },
+  {
+    "item_id": "generated-react-basics-props-1734998400",
+    "selected": "B",
+    "correct": "B",
+    "is_correct": true,
+    "latency_ms": 18089,
+    "timestamp": "2025-11-25T12:17:25.450Z",
+    "session_id": "67868308-c28c-4bf8-8b45-268bdab11be1"
+  },
+  {
+    "item_id": "generated-react-components-1734847290",
+    "selected": "A",
+    "correct": "A",
+    "is_correct": true,
+    "latency_ms": 72981,
+    "timestamp": "2025-11-25T12:22:32.913Z",
+    "session_id": "4bfa2e71-06ad-46c9-bcae-e8eaa3afff57"
+  },
+  {
+    "item_id": "generated-react-jsx-1734542890",
+    "selected": "A",
+    "correct": "A",
+    "is_correct": true,
+    "latency_ms": 7244,
+    "timestamp": "2025-11-25T12:22:52.655Z",
+    "session_id": "4bfa2e71-06ad-46c9-bcae-e8eaa3afff57"
+  },
+  {
+    "item_id": "js-this-001",
+    "selected": "B",
+    "correct": "A",
+    "is_correct": false,
+    "latency_ms": 16480,
+    "timestamp": "2025-11-25T13:40:57.208Z",
+    "session_id": "3833ad67-18ce-4b3a-b0d9-3e0b935f3a03"
+  },
+  {
+    "item_id": "generated-optics-1732285743",
+    "selected": "A",
+    "correct": "A",
+    "is_correct": true,
+    "latency_ms": 8728,
+    "timestamp": "2025-11-25T14:54:11.186Z",
+    "session_id": "3833ad67-18ce-4b3a-b0d9-3e0b935f3a03"
+  },
+  {
+    "item_id": "generated-optics-1734983420",
+    "selected": "B",
+    "correct": "B",
+    "is_correct": true,
+    "latency_ms": 13698,
+    "timestamp": "2025-11-25T14:54:41.327Z",
+    "session_id": "3833ad67-18ce-4b3a-b0d9-3e0b935f3a03"
+  },
+  {
+    "item_id": "generated-optics-1731619200003",
+    "selected": "B",
+    "correct": "A",
+    "is_correct": false,
+    "latency_ms": 74685,
+    "timestamp": "2025-11-25T14:56:08.648Z",
+    "session_id": "3833ad67-18ce-4b3a-b0d9-3e0b935f3a03"
+  }
+]

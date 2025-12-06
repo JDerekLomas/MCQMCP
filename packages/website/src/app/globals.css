@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #0D0D0D;
+
+  /* Claude.ai exact color palette */
+  --claude-primary: #DA7756;
+  --claude-primary-hover: #C96A4B;
+  --claude-accent: #E8DDD4;
+
+  --surface-primary: #FFFFFF;
+  --surface-secondary: #F5F4F1;
+  --surface-tertiary: #EEEDE9;
+  --surface-hover: #E8E7E3;
+
+  --ink-primary: #0D0D0D;
+  --ink-secondary: #5D5D5D;
+  --ink-tertiary: #8E8E8E;
+  --ink-placeholder: #A3A3A3;
+
+  --edge-light: #E8E7E3;
+  --edge-default: #D9D8D4;
+
+  /* Semantic */
+  --success: #16A34A;
+  --error: #DC2626;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-claude: var(--claude-primary);
+  --color-surface-primary: var(--surface-primary);
+  --color-surface-secondary: var(--surface-secondary);
+  --color-ink-primary: var(--ink-primary);
+  --color-ink-secondary: var(--ink-secondary);
+  --color-ink-tertiary: var(--ink-tertiary);
+  --color-edge-light: var(--edge-light);
+  --font-sans: "Söhne", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "Söhne Mono", "SF Mono", Monaco, "Cascadia Code", monospace;
+  --font-serif: "Tiempos Text", Georgia, "Times New Roman", serif;
+}
+
+/* Force light mode - Claude.ai style */
+body {
+  background: var(--surface-primary);
+  color: var(--ink-primary);
+  font-family: "Söhne", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar styling like Claude.ai */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--edge-default);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-tertiary);
+}
+
+/* Code block syntax highlighting base */
+pre code {
+  display: block;
+  overflow-x: auto;
+}
+
+/* Smooth transitions */
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: ease-out;
+  transition-duration: 150ms;
+}

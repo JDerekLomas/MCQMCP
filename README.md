@@ -1,31 +1,47 @@
 # MCQMCP
 
-MCP server for MCQ (Multiple Choice Question) generation and mastery tracking.
+Assessment infrastructure for AI tutoring. MCQMCP provides validated assessments that AI tutors can use to verify learning.
 
 > **Why this exists:** LLMs tutor millions but can't verify learning happened. MCQMCP gives LLMs the ability to check understanding with structured assessment.
 
-See [SPEC.md](SPEC.md) for the full vision including XP, badges, skill hierarchies, and item banks.
+**[Full Vision](docs/VISION.md)** | **[Roadmap](docs/ROADMAP.md)** | **[Research](docs/RESEARCH.md)** | **[Server Spec](SPEC.md)**
 
-## Status
+## Live
 
-**Current:** Minimal working server with basic mastery tracking
-**Planned:** Full spec with skills, items, XP system, widgets
+| Service | URL | Source |
+|---------|-----|--------|
+| **Website** | [mcqmcp.vercel.app](https://mcqmcp.vercel.app) | `packages/website` |
+| **MCP Server** | `mcqmcp.onrender.com/sse` | `packages/server` |
+| **Demo Client** | [claudetabs.vercel.app](https://claudetabs.vercel.app) | [claudetabs repo](https://github.com/JDerekLomas/claudetabs) |
 
-## Live Server
+## Repository Structure
 
-**URL:** `https://mcqmcp.onrender.com/sse`
+```
+MCQMCP/
+├── packages/
+│   ├── server/          # MCP server (deployed to Render)
+│   │   ├── src/         # Server source code
+│   │   ├── Dockerfile   # Container config
+│   │   └── package.json
+│   └── website/         # Marketing site + demo (deployed to Vercel)
+│       ├── src/app/     # Next.js pages
+│       └── package.json
+├── docs/                # Vision, roadmap, research
+├── SPEC.md              # Server specification
+└── package.json         # Workspace root
+```
 
-## Tools
+## MCP Server Tools
 
 | Tool | Description | Inputs |
 |------|-------------|--------|
-| `mcq_generate` | Generate an MCQ for a learning objective | `user_id`, `objective`, `difficulty` (easy/medium/hard) |
+| `mcq_generate` | Generate an MCQ for a learning objective | `user_id`, `objective`, `difficulty` |
 | `mcq_record` | Record a learner's response | `user_id`, `objective`, `selected_answer`, `correct_answer` |
 | `mcq_get_status` | Get mastery status | `user_id`, `objective` (optional) |
 
-## Usage
+## Quick Start
 
-### Connect from MCP Client
+### Connect to MCP Server
 
 ```typescript
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
@@ -48,75 +64,35 @@ const result = await client.callTool({
 });
 ```
 
-### Response Examples
-
-**mcq_generate:**
-```json
-{
-  "user_id": "user123",
-  "objective": "Understanding React hooks",
-  "difficulty": "medium",
-  "question": "[Medium] How would you apply the concept of: Understanding React hooks?",
-  "options": {
-    "A": "Apply it incorrectly",
-    "B": "Apply it in an unrelated context",
-    "C": "Apply it correctly with proper reasoning",
-    "D": "Avoid applying it altogether"
-  },
-  "correct_answer": "C",
-  "explanation": "Proper application requires understanding both the concept and its context."
-}
-```
-
-**mcq_record:**
-```json
-{
-  "user_id": "user123",
-  "objective": "Understanding React hooks",
-  "was_correct": true,
-  "current_score": "3/4",
-  "mastery_estimate": "75%"
-}
-```
-
-**mcq_get_status:**
-```json
-{
-  "user_id": "user123",
-  "objectives": [
-    {
-      "objective": "Understanding React hooks",
-      "correct": 3,
-      "total": 4,
-      "mastery_estimate": "75%"
-    }
-  ]
-}
-```
-
 ## Local Development
 
 ```bash
-# Install dependencies
+# Install all dependencies
 npm install
 
-# Set environment variables
-export SUPABASE_URL="your-supabase-url"
-export SUPABASE_KEY="your-supabase-anon-key"
+# Run website locally
+npm run dev:website
 
-# Build
-npm run build
-
-# Run (stdio)
-npm start
-
-# Run (HTTP)
-npm run start:http
+# Run server locally (requires SUPABASE_URL and SUPABASE_KEY)
+npm run dev:server
 ```
+
+## Deployment
+
+### Website (Vercel)
+- Connected to this repo
+- Builds from `packages/website`
+- Domain: `mcqmcp.vercel.app`
+
+### Server (Render)
+- Connected to this repo
+- Builds from `packages/server`
+- URL: `mcqmcp.onrender.com/sse`
+- Requires `SUPABASE_URL` and `SUPABASE_KEY` env vars
 
 ## Database
 
-Uses Supabase Postgres with this schema:
+Uses Supabase Postgres:
 
 ```sql
 CREATE TABLE mastery (
@@ -128,14 +104,3 @@ CREATE TABLE mastery (
   PRIMARY KEY (user_id, objective)
 );
 ```
-
-## Deployment
-
-Deployed on Render. Environment variables required:
-- `SUPABASE_URL`
-- `SUPABASE_KEY`
-- `PORT` (set by Render)
-
-## Integration
-
-See [Claude-mcq-assessment](https://github.com/JDerekLomas/Claude-mcq-assessment) for a Next.js frontend integration example.
