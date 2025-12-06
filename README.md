@@ -121,7 +121,7 @@ Generate an MCQ for a learning objective.
 ```
 
 ### `mcq_record`
-Record a learner's response and update mastery.
+Record a learner's response, log it for analytics, and update mastery.
 
 **Request:**
 ```json
@@ -131,10 +131,25 @@ Record a learner's response and update mastery.
     "user_id": "user123",
     "objective": "Understanding React hooks",
     "selected_answer": "C",
-    "correct_answer": "C"
+    "correct_answer": "C",
+    "item_id": "react-hooks-001",
+    "session_id": "session-abc123",
+    "latency_ms": 4500,
+    "difficulty": "medium"
   }
 }
 ```
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `user_id` | Yes | Learner identifier |
+| `objective` | Yes | Learning objective tested |
+| `selected_answer` | Yes | Answer chosen (A, B, C, or D) |
+| `correct_answer` | Yes | Correct answer (A, B, C, or D) |
+| `item_id` | No | Specific question identifier |
+| `session_id` | No | Session grouping identifier |
+| `latency_ms` | No | Response time in milliseconds |
+| `difficulty` | No | Item difficulty (easy/medium/hard) |
 
 **Response:**
 ```json
@@ -144,7 +159,8 @@ Record a learner's response and update mastery.
   "was_correct": true,
   "correct": 3,
   "total": 4,
-  "mastery": 0.75
+  "mastery": 0.75,
+  "response_logged": true
 }
 ```
 
@@ -203,8 +219,9 @@ MCQMCP currently has **two separate data systems**:
 
 ### MCP Server → Supabase (Production)
 
-The MCP server stores **aggregate mastery data** in Supabase Postgres.
+The MCP server stores data in two Supabase tables:
 
+#### `mastery` - Aggregate progress
 ```sql
 CREATE TABLE mastery (
   user_id TEXT NOT NULL,
@@ -216,19 +233,31 @@ CREATE TABLE mastery (
 );
 ```
 
+#### `responses` - Individual answers (for psychometrics)
+```sql
+CREATE TABLE responses (
+  id BIGSERIAL PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  objective TEXT NOT NULL,
+  item_id TEXT,
+  session_id TEXT,
+  selected_answer TEXT NOT NULL,
+  correct_answer TEXT NOT NULL,
+  is_correct BOOLEAN NOT NULL,
+  latency_ms INTEGER,
+  difficulty TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
 **What's captured:**
-- User ID + learning objective (composite key)
-- Running totals: correct answers / total attempts
-- Mastery percentage (correct/total)
-- Last activity timestamp
+- Every individual response with timestamp
+- Response latency (if provided)
+- Item and session identifiers (if provided)
+- Difficulty level (if provided)
+- Aggregate mastery per user/objective
 
-**What's NOT captured (yet):**
-- Individual response records
-- Response latency
-- Item-level metadata
-- Session context
-
-**Access:** Via `mcq_get_status` tool or Supabase dashboard
+**Access:** Via `mcq_record` / `mcq_get_status` tools or Supabase dashboard
 
 ### Website Demo → Vercel Postgres (Separate)
 
@@ -242,17 +271,17 @@ The website demo has **richer response-level logging** for development/research.
 
 **Access:** Via `/api/log-response` endpoint or Vercel dashboard
 
-### Data Gap
+### Comparison
 
 | Aspect | MCP Server | Website Demo |
 |--------|------------|--------------|
 | **Storage** | Supabase | Vercel Postgres |
-| **Granularity** | Aggregate only | Response-level |
-| **Latency tracking** | No | Yes |
-| **Item metadata** | No | Yes |
-| **Psychometrics-ready** | No | Yes |
+| **Granularity** | Response-level | Response-level |
+| **Latency tracking** | Yes | Yes |
+| **Item metadata** | Yes (item_id, difficulty) | Yes |
+| **Psychometrics-ready** | Yes | Yes |
 
-> **Roadmap:** The MCP server needs response-level logging to enable psychometric analysis (item difficulty, discrimination, etc.). This is planned for Phase 2.
+> **Note:** The MCP server now supports full response-level logging. The website demo remains a separate system for development/testing.
 
 ## Local Development
 

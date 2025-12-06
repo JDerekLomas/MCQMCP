@@ -105,9 +105,35 @@ server.tool(
     objective: z.string().describe("The learning objective tested"),
     selected_answer: z.string().describe("The answer selected by the learner (A, B, C, or D)"),
     correct_answer: z.string().describe("The correct answer (A, B, C, or D)"),
+    item_id: z.string().optional().describe("Optional item identifier for tracking specific questions"),
+    session_id: z.string().optional().describe("Optional session identifier for grouping responses"),
+    latency_ms: z.number().optional().describe("Optional response time in milliseconds"),
+    difficulty: z.enum(["easy", "medium", "hard"]).optional().describe("Optional difficulty level of the item"),
   },
-  async ({ user_id, objective, selected_answer, correct_answer }) => {
-    // Get current stats from Supabase
+  async ({ user_id, objective, selected_answer, correct_answer, item_id, session_id, latency_ms, difficulty }) => {
+    const wasCorrect = selected_answer.toUpperCase() === correct_answer.toUpperCase();
+    const timestamp = new Date().toISOString();
+
+    // 1. Log individual response to responses table
+    const responseRecord = {
+      user_id,
+      objective,
+      item_id: item_id || null,
+      session_id: session_id || null,
+      selected_answer: selected_answer.toUpperCase(),
+      correct_answer: correct_answer.toUpperCase(),
+      is_correct: wasCorrect,
+      latency_ms: latency_ms || null,
+      difficulty: difficulty || null,
+      created_at: timestamp,
+    };
+
+    const { error: responseError } = await supabase.from("responses").insert(responseRecord);
+    if (responseError) {
+      console.error("Error logging response:", responseError);
+    }
+
+    // 2. Update aggregate mastery stats
     const { data: existing } = await supabase
       .from("mastery")
       .select("correct, total")
@@ -118,27 +144,24 @@ server.tool(
     let correctCount = existing?.correct ?? 0;
     let totalCount = existing?.total ?? 0;
 
-    // Update stats
-    const wasCorrect = selected_answer.toUpperCase() === correct_answer.toUpperCase();
     if (wasCorrect) {
       correctCount++;
     }
     totalCount++;
 
-    // Upsert to Supabase
-    const { error } = await supabase.from("mastery").upsert(
+    const { error: masteryError } = await supabase.from("mastery").upsert(
       {
         user_id,
         objective,
         correct: correctCount,
         total: totalCount,
-        updated_at: new Date().toISOString(),
+        updated_at: timestamp,
       },
       { onConflict: "user_id,objective" }
     );
 
-    if (error) {
-      console.error("Supabase error:", error);
+    if (masteryError) {
+      console.error("Error updating mastery:", masteryError);
     }
 
     const masteryEstimate = Math.round((correctCount / totalCount) * 100);
@@ -156,6 +179,7 @@ server.tool(
               was_correct: wasCorrect,
               current_score: `${correctCount}/${totalCount}`,
               mastery_estimate: `${masteryEstimate}%`,
+              response_logged: !responseError,
             },
             null,
             2
@@ -296,16 +320,39 @@ async function handleToolCall(name: ToolName, args: Record<string, unknown>): Pr
     }
 
     case "mcq_record": {
-      const { user_id, objective, selected_answer, correct_answer } = args as { user_id: string; objective: string; selected_answer: string; correct_answer: string };
+      const { user_id, objective, selected_answer, correct_answer, item_id, session_id, latency_ms, difficulty } = args as {
+        user_id: string; objective: string; selected_answer: string; correct_answer: string;
+        item_id?: string; session_id?: string; latency_ms?: number; difficulty?: "easy" | "medium" | "hard";
+      };
+      const wasCorrect = selected_answer.toUpperCase() === correct_answer.toUpperCase();
+      const timestamp = new Date().toISOString();
+
+      // 1. Log individual response
+      const responseRecord = {
+        user_id,
+        objective,
+        item_id: item_id || null,
+        session_id: session_id || null,
+        selected_answer: selected_answer.toUpperCase(),
+        correct_answer: correct_answer.toUpperCase(),
+        is_correct: wasCorrect,
+        latency_ms: latency_ms || null,
+        difficulty: difficulty || null,
+        created_at: timestamp,
+      };
+      const { error: responseError } = await supabase.from("responses").insert(responseRecord);
+      if (responseError) console.error("Error logging response:", responseError);
+
+      // 2. Update aggregate mastery
       const { data: existing } = await supabase.from("mastery").select("correct, total").eq("user_id", user_id).eq("objective", objective).single();
       let correctCount = existing?.correct ?? 0;
       let totalCount = existing?.total ?? 0;
-      const wasCorrect = selected_answer.toUpperCase() === correct_answer.toUpperCase();
       if (wasCorrect) correctCount++;
       totalCount++;
-      const { error } = await supabase.from("mastery").upsert({ user_id, objective, correct: correctCount, total: totalCount, updated_at: new Date().toISOString() }, { onConflict: "user_id,objective" });
-      if (error) console.error("Supabase error:", error);
-      return { user_id, objective, was_correct: wasCorrect, correct: correctCount, total: totalCount, mastery: totalCount > 0 ? correctCount / totalCount : 0 };
+      const { error: masteryError } = await supabase.from("mastery").upsert({ user_id, objective, correct: correctCount, total: totalCount, updated_at: timestamp }, { onConflict: "user_id,objective" });
+      if (masteryError) console.error("Error updating mastery:", masteryError);
+
+      return { user_id, objective, was_correct: wasCorrect, correct: correctCount, total: totalCount, mastery: totalCount > 0 ? correctCount / totalCount : 0, response_logged: !responseError };
     }
 
     case "mcq_get_status": {
