@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Github, ArrowRight } from 'lucide-react';
+import { Github, ArrowRight, BarChart3 } from 'lucide-react';
 import { LogoMark } from '@/components/brand/Logo';
 
 export function Navigation() {
   const pathname = usePathname();
   const isDemo = pathname === '/demo';
+  const isDashboard = pathname === '/dashboard';
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-edge-light">
@@ -40,6 +41,13 @@ export function Navigation() {
           >
             For Learning Engineers
           </Link>
+          <Link
+            href="/dashboard"
+            className="text-sm text-ink-secondary hover:text-ink-primary transition-colors flex items-center gap-1.5"
+          >
+            <BarChart3 size={16} />
+            Dashboard
+          </Link>
           <a
             href="https://github.com/JDerekLomas/MCQMCP"
             target="_blank"
@@ -53,7 +61,7 @@ export function Navigation() {
 
         {/* CTA */}
         <div className="flex items-center gap-3">
-          {isDemo ? (
+          {isDemo || isDashboard ? (
             <Link
               href="/"
               className="text-sm text-ink-secondary hover:text-ink-primary transition-colors"
