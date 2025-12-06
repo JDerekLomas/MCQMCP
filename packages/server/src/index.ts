@@ -6,6 +6,40 @@ import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { createServer } from "http";
 import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
+import { readFileSync } from "fs";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+
+// Load item bank
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const itemBankPath = join(__dirname, "item-bank.json");
+const itemBank = JSON.parse(readFileSync(itemBankPath, "utf-8"));
+
+// Index items by topic and difficulty
+interface Item {
+  id: string;
+  topic: string;
+  difficulty: "easy" | "medium" | "hard";
+  stem: string;
+  code?: string;
+  options: { id: string; text: string }[];
+  correct: string;
+  feedback: { correct: string; incorrect: string; explanation: string };
+}
+
+const itemsByTopic: Record<string, Item[]> = {};
+const itemsByDifficulty: Record<string, Item[]> = { easy: [], medium: [], hard: [] };
+const allTopics = new Set<string>();
+
+for (const item of itemBank.items as Item[]) {
+  allTopics.add(item.topic);
+  if (!itemsByTopic[item.topic]) {
+    itemsByTopic[item.topic] = [];
+  }
+  itemsByTopic[item.topic].push(item);
+  itemsByDifficulty[item.difficulty].push(item);
+}
 
 // Supabase setup
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -21,57 +55,98 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 // Create MCP server
 const server = new McpServer({
   name: "mcqmcp",
-  version: "0.1.0",
+  version: "0.2.0",
 });
 
-// Tool 1: mcq_generate - Generate an MCQ for a learning objective
+// Helper to find matching items
+function findItems(topic: string | undefined, difficulty: "easy" | "medium" | "hard"): Item[] {
+  let candidates: Item[] = [];
+
+  if (topic) {
+    // Try exact topic match first
+    const topicLower = topic.toLowerCase().replace(/\s+/g, "-");
+    if (itemsByTopic[topicLower]) {
+      candidates = itemsByTopic[topicLower].filter(i => i.difficulty === difficulty);
+    }
+    // Try partial match
+    if (candidates.length === 0) {
+      for (const [t, items] of Object.entries(itemsByTopic)) {
+        if (t.includes(topicLower) || topicLower.includes(t.replace("js-", "").replace("react-", ""))) {
+          candidates.push(...items.filter(i => i.difficulty === difficulty));
+        }
+      }
+    }
+  }
+
+  // Fall back to any item with matching difficulty
+  if (candidates.length === 0) {
+    candidates = itemsByDifficulty[difficulty];
+  }
+
+  return candidates;
+}
+
+// Tool 0: mcq_list_topics - List available topics
+server.tool(
+  "mcq_list_topics",
+  "List all available assessment topics",
+  {},
+  async () => {
+    const topics = Array.from(allTopics).map(topic => {
+      const items = itemsByTopic[topic] || [];
+      return {
+        topic,
+        item_count: items.length,
+        difficulties: [...new Set(items.map(i => i.difficulty))],
+      };
+    });
+
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text: JSON.stringify({ topics, total_items: itemBank.items.length }, null, 2),
+        },
+      ],
+    };
+  }
+);
+
+// Tool 1: mcq_generate - Get a real MCQ from the item bank
 server.tool(
   "mcq_generate",
-  "Generate a multiple choice question for a learning objective",
+  "Get a multiple choice question from the item bank for a topic",
   {
     user_id: z.string().describe("The learner's user ID"),
-    objective: z.string().describe("The learning objective to test"),
+    topic: z.string().optional().describe("Topic to quiz on (e.g., 'js-closures', 'react-hooks'). Omit for random."),
     difficulty: z.enum(["easy", "medium", "hard"]).describe("Question difficulty level"),
   },
-  async ({ user_id, objective, difficulty }) => {
-    // Placeholder question generation (will be replaced with LLM later)
-    const questions: Record<string, { question: string; options: Record<string, string>; correct_answer: string; explanation: string }> = {
-      easy: {
-        question: `[Easy] What is a key concept related to: ${objective}?`,
-        options: {
-          A: "The correct fundamental concept",
-          B: "A common misconception",
-          C: "An unrelated concept",
-          D: "A partially correct idea",
-        },
-        correct_answer: "A",
-        explanation: `The correct answer demonstrates understanding of the basics of ${objective}.`,
-      },
-      medium: {
-        question: `[Medium] How would you apply the concept of: ${objective}?`,
-        options: {
-          A: "Apply it incorrectly",
-          B: "Apply it in an unrelated context",
-          C: "Apply it correctly with proper reasoning",
-          D: "Avoid applying it altogether",
-        },
-        correct_answer: "C",
-        explanation: `Proper application of ${objective} requires understanding both the concept and its context.`,
-      },
-      hard: {
-        question: `[Hard] Analyze the implications of: ${objective}`,
-        options: {
-          A: "Surface-level analysis only",
-          B: "Misunderstanding the core principle",
-          C: "Partial analysis missing key aspects",
-          D: "Deep analysis considering multiple perspectives and edge cases",
-        },
-        correct_answer: "D",
-        explanation: `Advanced understanding of ${objective} requires considering multiple perspectives and edge cases.`,
-      },
-    };
+  async ({ user_id, topic, difficulty }) => {
+    const candidates = findItems(topic, difficulty);
 
-    const q = questions[difficulty];
+    if (candidates.length === 0) {
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: JSON.stringify({
+              error: "no_items_found",
+              message: `No items found for topic "${topic}" at difficulty "${difficulty}"`,
+              available_topics: Array.from(allTopics),
+            }, null, 2),
+          },
+        ],
+      };
+    }
+
+    // Pick a random item
+    const item = candidates[Math.floor(Math.random() * candidates.length)];
+
+    // Format options as A, B, C, D
+    const options: Record<string, string> = {};
+    item.options.forEach(opt => {
+      options[opt.id] = opt.text;
+    });
 
     return {
       content: [
@@ -80,12 +155,14 @@ server.tool(
           text: JSON.stringify(
             {
               user_id,
-              objective,
-              difficulty,
-              question: q.question,
-              options: q.options,
-              correct_answer: q.correct_answer,
-              explanation: q.explanation,
+              item_id: item.id,
+              topic: item.topic,
+              difficulty: item.difficulty,
+              question: item.stem,
+              code: item.code || null,
+              options,
+              correct_answer: item.correct,
+              explanation: item.feedback.explanation,
             },
             null,
             2
@@ -284,7 +361,7 @@ server.tool(
 );
 
 // Tool handlers for REST API
-type ToolName = "mcq_generate" | "mcq_record" | "mcq_get_status";
+type ToolName = "mcq_list_topics" | "mcq_generate" | "mcq_record" | "mcq_get_status";
 
 interface ToolRequest {
   name: ToolName;
@@ -293,30 +370,27 @@ interface ToolRequest {
 
 async function handleToolCall(name: ToolName, args: Record<string, unknown>): Promise<unknown> {
   switch (name) {
+    case "mcq_list_topics": {
+      const topics = Array.from(allTopics).map(topic => {
+        const items = itemsByTopic[topic] || [];
+        return { topic, item_count: items.length, difficulties: [...new Set(items.map(i => i.difficulty))] };
+      });
+      return { topics, total_items: itemBank.items.length };
+    }
+
     case "mcq_generate": {
-      const { user_id, objective, difficulty } = args as { user_id: string; objective: string; difficulty: "easy" | "medium" | "hard" };
-      const questions: Record<string, { question: string; options: Record<string, string>; correct_answer: string; explanation: string }> = {
-        easy: {
-          question: `[Easy] What is a key concept related to: ${objective}?`,
-          options: { A: "The correct fundamental concept", B: "A common misconception", C: "An unrelated concept", D: "A partially correct idea" },
-          correct_answer: "A",
-          explanation: `The correct answer demonstrates understanding of the basics of ${objective}.`,
-        },
-        medium: {
-          question: `[Medium] How would you apply the concept of: ${objective}?`,
-          options: { A: "Apply it incorrectly", B: "Apply it in an unrelated context", C: "Apply it correctly with proper reasoning", D: "Avoid applying it altogether" },
-          correct_answer: "C",
-          explanation: `Proper application of ${objective} requires understanding both the concept and its context.`,
-        },
-        hard: {
-          question: `[Hard] Analyze the implications of: ${objective}`,
-          options: { A: "Surface-level analysis only", B: "Misunderstanding the core principle", C: "Partial analysis missing key aspects", D: "Deep analysis considering multiple perspectives and edge cases" },
-          correct_answer: "D",
-          explanation: `Advanced understanding of ${objective} requires considering multiple perspectives and edge cases.`,
-        },
-      };
-      const q = questions[difficulty];
-      return { user_id, objective, difficulty, question: q.question, options: q.options, correct_answer: q.correct_answer, explanation: q.explanation };
+      const { user_id, topic, difficulty } = args as { user_id: string; topic?: string; difficulty: "easy" | "medium" | "hard" };
+      const candidates = findItems(topic, difficulty);
+
+      if (candidates.length === 0) {
+        return { error: "no_items_found", message: `No items found for topic "${topic}" at difficulty "${difficulty}"`, available_topics: Array.from(allTopics) };
+      }
+
+      const item = candidates[Math.floor(Math.random() * candidates.length)];
+      const options: Record<string, string> = {};
+      item.options.forEach(opt => { options[opt.id] = opt.text; });
+
+      return { user_id, item_id: item.id, topic: item.topic, difficulty: item.difficulty, question: item.stem, code: item.code || null, options, correct_answer: item.correct, explanation: item.feedback.explanation };
     }
 
     case "mcq_record": {
@@ -413,7 +487,7 @@ async function main() {
             messages: "/messages",
             api: "/api/tools/call"
           },
-          tools: ["mcq_generate", "mcq_record", "mcq_get_status"],
+          tools: ["mcq_list_topics", "mcq_generate", "mcq_record", "mcq_get_status"],
           docs: "https://github.com/JDerekLomas/MCQMCP"
         }));
         return;

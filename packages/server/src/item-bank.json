@@ -1,0 +1,958 @@
+{
+  "version": "1.0.0",
+  "items": [
+    {
+      "id": "js-this-001",
+      "topic": "js-this",
+      "difficulty": "easy",
+      "stem": "What will be logged to the console?",
+      "code": "const obj = {\n  name: 'Alice',\n  greet() {\n    console.log(this.name);\n  }\n};\n\nobj.greet();",
+      "options": [
+        { "id": "A", "text": "Alice" },
+        { "id": "B", "text": "undefined" },
+        { "id": "C", "text": "An empty string" },
+        { "id": "D", "text": "ReferenceError: name is not defined" }
+      ],
+      "correct": "A",
+      "feedback": {
+        "correct": "Correct! When a method is called on an object, `this` refers to that object.",
+        "incorrect": "Not quite. When calling `obj.greet()`, the `this` inside `greet` refers to `obj`.",
+        "explanation": "In JavaScript, when a function is called as a method of an object (using dot notation), `this` is bound to the object before the dot. Here, `obj.greet()` means `this` is `obj`, so `this.name` is 'Alice'."
+      }
+    },
+    {
+      "id": "js-this-002",
+      "topic": "js-this",
+      "difficulty": "medium",
+      "stem": "What will be logged to the console?",
+      "code": "const obj = {\n  name: 'Alice',\n  greet() {\n    console.log(this.name);\n  }\n};\n\nconst greet = obj.greet;\ngreet();",
+      "options": [
+        { "id": "A", "text": "Alice" },
+        { "id": "B", "text": "undefined" },
+        { "id": "C", "text": "TypeError: Cannot read property 'name' of undefined" },
+        { "id": "D", "text": "An empty string" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! When the method is assigned to a variable and called without context, `this` becomes the global object (or undefined in strict mode).",
+        "incorrect": "Remember: `this` is determined by how a function is called, not where it's defined.",
+        "explanation": "When you assign `obj.greet` to a variable, you're copying the function reference without the object context. Calling `greet()` without an object means `this` defaults to the global object (in non-strict mode) or `undefined` (in strict mode). Since `window.name` is typically an empty string or undefined, you get `undefined`."
+      }
+    },
+    {
+      "id": "js-this-003",
+      "topic": "js-this",
+      "difficulty": "hard",
+      "stem": "What will be logged to the console?",
+      "code": "const obj = {\n  name: 'Alice',\n  greet: () => {\n    console.log(this.name);\n  }\n};\n\nobj.greet();",
+      "options": [
+        { "id": "A", "text": "Alice" },
+        { "id": "B", "text": "undefined" },
+        { "id": "C", "text": "TypeError: this is undefined" },
+        { "id": "D", "text": "The global window's name property (or empty string)" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Arrow functions don't have their own `this`—they inherit it from the enclosing lexical scope.",
+        "incorrect": "Arrow functions behave differently from regular functions regarding `this`.",
+        "explanation": "Arrow functions do not have their own `this` binding. Instead, they capture `this` from the surrounding lexical scope at the time they're created. Here, the arrow function is created in the global scope (or module scope), so `this` refers to the global object or `undefined` in strict mode/modules. The fact that it's a property of `obj` doesn't matter."
+      }
+    },
+    {
+      "id": "js-closures-001",
+      "topic": "js-closures",
+      "difficulty": "easy",
+      "stem": "What will be logged to the console?",
+      "code": "function outer() {\n  const x = 10;\n  function inner() {\n    console.log(x);\n  }\n  return inner;\n}\n\nconst fn = outer();\nfn();",
+      "options": [
+        { "id": "A", "text": "10" },
+        { "id": "B", "text": "undefined" },
+        { "id": "C", "text": "ReferenceError: x is not defined" },
+        { "id": "D", "text": "null" }
+      ],
+      "correct": "A",
+      "feedback": {
+        "correct": "Correct! The inner function 'closes over' the variable x, retaining access even after outer() returns.",
+        "incorrect": "Think about what the inner function can still 'see' after outer() has finished executing.",
+        "explanation": "A closure is formed when a function is defined inside another function and references variables from the outer function's scope. Even after `outer()` returns, `inner` maintains a reference to `x` in its closure. This is fundamental to how JavaScript manages scope and memory."
+      }
+    },
+    {
+      "id": "js-closures-002",
+      "topic": "js-closures",
+      "difficulty": "medium",
+      "stem": "What will be logged to the console?",
+      "code": "for (var i = 0; i < 3; i++) {\n  setTimeout(() => console.log(i), 0);\n}",
+      "options": [
+        { "id": "A", "text": "0, 1, 2" },
+        { "id": "B", "text": "3, 3, 3" },
+        { "id": "C", "text": "undefined, undefined, undefined" },
+        { "id": "D", "text": "0, 0, 0" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! All three callbacks share the same `i` variable, which equals 3 after the loop completes.",
+        "incorrect": "Remember that `var` has function scope, not block scope, and setTimeout callbacks run after the loop.",
+        "explanation": "With `var`, there's only one `i` variable shared across all iterations. By the time the setTimeout callbacks execute (after the loop finishes), `i` has already been incremented to 3. This is the classic closure-in-a-loop gotcha. Using `let` instead of `var` would create a new `i` for each iteration."
+      }
+    },
+    {
+      "id": "js-closures-003",
+      "topic": "js-closures",
+      "difficulty": "hard",
+      "stem": "What will be logged to the console?",
+      "code": "function createCounter() {\n  let count = 0;\n  return {\n    increment: () => ++count,\n    getCount: () => count\n  };\n}\n\nconst counter1 = createCounter();\nconst counter2 = createCounter();\n\ncounter1.increment();\ncounter1.increment();\ncounter2.increment();\n\nconsole.log(counter1.getCount(), counter2.getCount());",
+      "options": [
+        { "id": "A", "text": "2 1" },
+        { "id": "B", "text": "3 3" },
+        { "id": "C", "text": "2 2" },
+        { "id": "D", "text": "1 1" }
+      ],
+      "correct": "A",
+      "feedback": {
+        "correct": "Correct! Each call to createCounter() creates a new closure with its own private `count` variable.",
+        "incorrect": "Consider: does each counter share the same `count`, or do they have separate ones?",
+        "explanation": "Each call to `createCounter()` creates a new execution context with its own `count` variable. `counter1` and `counter2` each have their own private `count` in their respective closures. This is a common pattern for creating private state in JavaScript."
+      }
+    },
+    {
+      "id": "js-async-001",
+      "topic": "js-async",
+      "difficulty": "easy",
+      "stem": "What will be logged to the console, and in what order?",
+      "code": "console.log('A');\n\nPromise.resolve().then(() => console.log('B'));\n\nconsole.log('C');",
+      "options": [
+        { "id": "A", "text": "A, B, C" },
+        { "id": "B", "text": "A, C, B" },
+        { "id": "C", "text": "B, A, C" },
+        { "id": "D", "text": "A, C (B is never logged)" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Promise callbacks are microtasks that run after the current synchronous code completes.",
+        "incorrect": "Think about when Promise callbacks actually execute relative to synchronous code.",
+        "explanation": "JavaScript executes synchronous code first, then processes microtasks (like Promise callbacks) before moving to the next macrotask. So 'A' logs first, then 'C', then the Promise callback runs and logs 'B'."
+      }
+    },
+    {
+      "id": "js-async-002",
+      "topic": "js-async",
+      "difficulty": "medium",
+      "stem": "What will be logged to the console?",
+      "code": "async function foo() {\n  console.log('1');\n  await Promise.resolve();\n  console.log('2');\n}\n\nconsole.log('3');\nfoo();\nconsole.log('4');",
+      "options": [
+        { "id": "A", "text": "3, 1, 4, 2" },
+        { "id": "B", "text": "3, 1, 2, 4" },
+        { "id": "C", "text": "1, 2, 3, 4" },
+        { "id": "D", "text": "3, 4, 1, 2" }
+      ],
+      "correct": "A",
+      "feedback": {
+        "correct": "Correct! Code after `await` is scheduled as a microtask, while code before `await` runs synchronously.",
+        "incorrect": "Remember: an async function runs synchronously until it hits the first `await`.",
+        "explanation": "When `foo()` is called, it executes synchronously until the `await`. So '3' logs, then '1' logs (inside foo), then the await pauses foo and returns control. '4' logs, then the microtask queue processes and '2' logs. The key insight: everything before `await` is synchronous."
+      }
+    },
+    {
+      "id": "js-async-003",
+      "topic": "js-async",
+      "difficulty": "hard",
+      "stem": "What will be logged to the console?",
+      "code": "Promise.resolve()\n  .then(() => {\n    console.log('1');\n    return Promise.resolve();\n  })\n  .then(() => console.log('2'));\n\nPromise.resolve()\n  .then(() => console.log('3'))\n  .then(() => console.log('4'));",
+      "options": [
+        { "id": "A", "text": "1, 2, 3, 4" },
+        { "id": "B", "text": "1, 3, 2, 4" },
+        { "id": "C", "text": "1, 3, 4, 2" },
+        { "id": "D", "text": "3, 1, 4, 2" }
+      ],
+      "correct": "C",
+      "feedback": {
+        "correct": "Correct! Returning a Promise from a then() adds an extra microtask tick before the next then() can run.",
+        "incorrect": "The key is understanding how returning a Promise from then() affects the microtask queue.",
+        "explanation": "When a then() callback returns a Promise, the next then() in the chain must wait for that Promise to resolve, which takes an extra microtask. So: '1' logs, '3' logs (both first thens complete). Then '4' logs (second chain continues), and finally '2' logs (the returned Promise resolved, allowing the first chain to continue)."
+      }
+    },
+    {
+      "id": "js-prototypes-001",
+      "topic": "js-prototypes",
+      "difficulty": "easy",
+      "stem": "What will be logged to the console?",
+      "code": "function Animal(name) {\n  this.name = name;\n}\n\nAnimal.prototype.speak = function() {\n  return `${this.name} makes a sound`;\n};\n\nconst dog = new Animal('Rex');\nconsole.log(dog.speak());",
+      "options": [
+        { "id": "A", "text": "Rex makes a sound" },
+        { "id": "B", "text": "undefined makes a sound" },
+        { "id": "C", "text": "TypeError: dog.speak is not a function" },
+        { "id": "D", "text": "Animal makes a sound" }
+      ],
+      "correct": "A",
+      "feedback": {
+        "correct": "Correct! The `dog` instance inherits the `speak` method from Animal.prototype.",
+        "incorrect": "Remember that methods on the prototype are inherited by all instances.",
+        "explanation": "When you use `new Animal('Rex')`, JavaScript creates an object whose prototype is `Animal.prototype`. The `speak` method isn't on `dog` directly, but JavaScript finds it by following the prototype chain. When called, `this` refers to `dog`, so `this.name` is 'Rex'."
+      }
+    },
+    {
+      "id": "js-prototypes-002",
+      "topic": "js-prototypes",
+      "difficulty": "medium",
+      "stem": "What will be logged to the console?",
+      "code": "const obj = { a: 1 };\nconst child = Object.create(obj);\nchild.b = 2;\n\nconsole.log(child.a, child.hasOwnProperty('a'));",
+      "options": [
+        { "id": "A", "text": "1, true" },
+        { "id": "B", "text": "1, false" },
+        { "id": "C", "text": "undefined, false" },
+        { "id": "D", "text": "1, TypeError" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! `child` can access `a` through its prototype, but it's not its 'own' property.",
+        "incorrect": "Think about the difference between inherited properties and own properties.",
+        "explanation": "`Object.create(obj)` creates a new object with `obj` as its prototype. `child` can access `a` through the prototype chain, but `hasOwnProperty` only returns true for properties directly on the object itself, not inherited ones."
+      }
+    },
+    {
+      "id": "js-prototypes-003",
+      "topic": "js-prototypes",
+      "difficulty": "hard",
+      "stem": "What will be logged to the console?",
+      "code": "function Foo() {}\nFoo.prototype.x = 1;\n\nconst a = new Foo();\nconst b = new Foo();\n\na.x = 2;\nFoo.prototype.x = 3;\n\nconsole.log(a.x, b.x);",
+      "options": [
+        { "id": "A", "text": "2, 3" },
+        { "id": "B", "text": "2, 1" },
+        { "id": "C", "text": "3, 3" },
+        { "id": "D", "text": "2, 2" }
+      ],
+      "correct": "A",
+      "feedback": {
+        "correct": "Correct! Setting `a.x = 2` creates an own property on `a`, shadowing the prototype. `b` still reads from the prototype.",
+        "incorrect": "Consider what happens when you set a property on an instance vs. the prototype.",
+        "explanation": "When you do `a.x = 2`, JavaScript creates a new 'own' property `x` on `a`, which shadows the prototype's `x`. Now `a.x` reads from the own property (2), ignoring the prototype. But `b` has no own `x` property, so it still reads from `Foo.prototype.x`, which is now 3."
+      }
+    },
+    {
+      "id": "js-timers-001",
+      "topic": "js-timers",
+      "difficulty": "easy",
+      "stem": "What will be logged to the console, and in what order?",
+      "code": "console.log('start');\n\nsetTimeout(() => console.log('timeout'), 0);\n\nconsole.log('end');",
+      "options": [
+        { "id": "A", "text": "start, timeout, end" },
+        { "id": "B", "text": "start, end, timeout" },
+        { "id": "C", "text": "timeout, start, end" },
+        { "id": "D", "text": "start, end (timeout never fires)" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Even with a 0ms delay, setTimeout callbacks are placed in the task queue and run after the current script.",
+        "incorrect": "Remember that setTimeout(fn, 0) doesn't mean 'run immediately'.",
+        "explanation": "setTimeout schedules a callback to run after a minimum delay, but it goes into the macrotask queue. The current synchronous code must complete before any queued tasks run. So 'start' and 'end' log first, then the event loop picks up the timeout callback."
+      }
+    },
+    {
+      "id": "js-timers-002",
+      "topic": "js-timers",
+      "difficulty": "medium",
+      "stem": "What will be logged to the console, and in what order?",
+      "code": "console.log('1');\n\nsetTimeout(() => console.log('2'), 0);\n\nPromise.resolve().then(() => console.log('3'));\n\nconsole.log('4');",
+      "options": [
+        { "id": "A", "text": "1, 4, 2, 3" },
+        { "id": "B", "text": "1, 4, 3, 2" },
+        { "id": "C", "text": "1, 2, 3, 4" },
+        { "id": "D", "text": "1, 3, 4, 2" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Microtasks (Promise callbacks) have priority over macrotasks (setTimeout).",
+        "incorrect": "Remember the priority: synchronous code → microtasks → macrotasks.",
+        "explanation": "JavaScript processes the call stack first ('1', '4'), then drains the microtask queue (Promise callback: '3'), and finally processes the macrotask queue (setTimeout: '2'). Microtasks always run before the next macrotask."
+      }
+    },
+    {
+      "id": "js-timers-003",
+      "topic": "js-timers",
+      "difficulty": "hard",
+      "stem": "What will be logged to the console, and in what order?",
+      "code": "setTimeout(() => console.log('1'), 0);\n\nPromise.resolve()\n  .then(() => {\n    console.log('2');\n    return Promise.resolve();\n  })\n  .then(() => console.log('3'));\n\nPromise.resolve().then(() => console.log('4'));\n\nconsole.log('5');",
+      "options": [
+        { "id": "A", "text": "5, 2, 4, 3, 1" },
+        { "id": "B", "text": "5, 2, 3, 4, 1" },
+        { "id": "C", "text": "5, 4, 2, 3, 1" },
+        { "id": "D", "text": "5, 2, 4, 1, 3" }
+      ],
+      "correct": "A",
+      "feedback": {
+        "correct": "Correct! Microtasks are processed in order, but returning a Promise delays the next then() by one tick.",
+        "incorrect": "Track each microtask carefully, especially when a then() returns a Promise.",
+        "explanation": "After '5' logs synchronously, the microtask queue has two items: the first then() of each Promise chain. '2' logs, but returning Promise.resolve() delays '3'. '4' logs next. Then '3' logs (the returned Promise resolved). Finally, the macrotask '1' runs."
+      }
+    },
+    {
+      "id": "js-patterns-001",
+      "topic": "js-patterns",
+      "difficulty": "easy",
+      "stem": "What will be logged to the console?",
+      "code": "const user = { name: 'Alice', age: 30 };\nconst { name, role = 'user' } = user;\n\nconsole.log(name, role);",
+      "options": [
+        { "id": "A", "text": "Alice user" },
+        { "id": "B", "text": "Alice undefined" },
+        { "id": "C", "text": "undefined user" },
+        { "id": "D", "text": "SyntaxError" }
+      ],
+      "correct": "A",
+      "feedback": {
+        "correct": "Correct! Default values in destructuring are used when the property is undefined or missing.",
+        "incorrect": "Destructuring default values kick in when the value is undefined.",
+        "explanation": "When destructuring, you can provide default values with `=`. Since `user.name` exists, `name` is 'Alice'. Since `user.role` is undefined (missing), the default value 'user' is used for `role`."
+      }
+    },
+    {
+      "id": "js-patterns-002",
+      "topic": "js-patterns",
+      "difficulty": "medium",
+      "stem": "What will be logged to the console?",
+      "code": "const arr = [1, 2, 3];\nconst [first, ...rest] = arr;\nconst newArr = [0, ...rest];\n\nconsole.log(newArr);",
+      "options": [
+        { "id": "A", "text": "[0, 1, 2, 3]" },
+        { "id": "B", "text": "[0, 2, 3]" },
+        { "id": "C", "text": "[0, [2, 3]]" },
+        { "id": "D", "text": "[0, ...rest]" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Rest destructuring captures remaining elements, and spread expands them into the new array.",
+        "incorrect": "Trace through each destructuring and spread operation step by step.",
+        "explanation": "First, `[first, ...rest] = arr` assigns 1 to `first` and [2, 3] to `rest`. Then `[0, ...rest]` creates a new array by spreading `rest` (which is [2, 3]) into it after 0, resulting in [0, 2, 3]."
+      }
+    },
+    {
+      "id": "js-patterns-003",
+      "topic": "js-patterns",
+      "difficulty": "hard",
+      "stem": "What will be logged to the console?",
+      "code": "const obj = {\n  a: 1,\n  b: 2,\n  get sum() {\n    return this.a + this.b;\n  }\n};\n\nconst copy = { ...obj };\ncopy.a = 10;\n\nconsole.log(obj.sum, copy.sum);",
+      "options": [
+        { "id": "A", "text": "3 12" },
+        { "id": "B", "text": "3 3" },
+        { "id": "C", "text": "12 12" },
+        { "id": "D", "text": "3 undefined" }
+      ],
+      "correct": "A",
+      "feedback": {
+        "correct": "Correct! Spread copies the getter's current value as a regular property, and each object's sum uses its own `this`.",
+        "incorrect": "Consider what happens to getters when you spread an object.",
+        "explanation": "When spreading an object, getters are invoked and their returned values are copied as plain data properties. So `copy.sum` is initially set to 3 (the result of obj.sum at copy time). Wait—actually, the spread does copy the getter as well! Each `sum` getter uses `this.a + this.b` where `this` refers to the object it's called on. So `obj.sum` is 1+2=3, and `copy.sum` is 10+2=12."
+      }
+    },
+    {
+      "id": "html-events-001",
+      "topic": "html-events",
+      "difficulty": "easy",
+      "stem": "Given this HTML structure, which element's click handler runs first?",
+      "code": "<div id=\"outer\">\n  <button id=\"inner\">Click me</button>\n</div>\n\n<script>\n  outer.addEventListener('click', () => console.log('outer'));\n  inner.addEventListener('click', () => console.log('inner'));\n</script>",
+      "options": [
+        { "id": "A", "text": "outer" },
+        { "id": "B", "text": "inner" },
+        { "id": "C", "text": "They run simultaneously" },
+        { "id": "D", "text": "Only inner runs" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! By default, events bubble from the target element outward.",
+        "incorrect": "Think about the default event propagation direction in the DOM.",
+        "explanation": "DOM events go through three phases: capture (outer to inner), target, and bubble (inner to outer). By default, addEventListener listens during the bubble phase. So when you click the button, 'inner' logs first, then the event bubbles up and 'outer' logs."
+      }
+    },
+    {
+      "id": "html-events-002",
+      "topic": "html-events",
+      "difficulty": "medium",
+      "stem": "What will be logged when the button is clicked?",
+      "code": "<div id=\"parent\">\n  <button id=\"child\">Click</button>\n</div>\n\n<script>\n  parent.addEventListener('click', () => console.log('parent'), true);\n  child.addEventListener('click', (e) => {\n    console.log('child');\n    e.stopPropagation();\n  });\n  parent.addEventListener('click', () => console.log('parent-bubble'));\n</script>",
+      "options": [
+        { "id": "A", "text": "child, parent-bubble" },
+        { "id": "B", "text": "parent, child" },
+        { "id": "C", "text": "parent, child, parent-bubble" },
+        { "id": "D", "text": "child" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! The capture listener runs first, then the target handler which stops propagation.",
+        "incorrect": "The third parameter `true` enables capture mode. What order do capture vs bubble listeners fire?",
+        "explanation": "The first parent listener uses capture mode (third parameter is `true`), so it fires during the capture phase before the event reaches the target. Then 'child' logs. `stopPropagation()` prevents the event from continuing, so 'parent-bubble' never fires."
+      }
+    },
+    {
+      "id": "html-events-003",
+      "topic": "html-events",
+      "difficulty": "hard",
+      "stem": "Using event delegation, how would you efficiently handle clicks on dynamically added list items?",
+      "code": "<ul id=\"list\">\n  <li>Item 1</li>\n  <li>Item 2</li>\n</ul>\n\n// Later: new <li> elements are added dynamically",
+      "options": [
+        { "id": "A", "text": "Attach a click handler to each <li> when it's created" },
+        { "id": "B", "text": "Use list.addEventListener('click', handler) and check event.target" },
+        { "id": "C", "text": "Use document.querySelectorAll('li').forEach(li => li.onclick = handler)" },
+        { "id": "D", "text": "Use MutationObserver to detect new <li> elements and attach handlers" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Event delegation uses a single handler on a parent element, checking the event target.",
+        "incorrect": "Event delegation leverages event bubbling for efficient handling of dynamic content.",
+        "explanation": "Event delegation attaches one listener to a parent element that persists. When any child is clicked, the event bubbles up. You check `event.target` or `event.target.closest('li')` to determine which item was clicked. This works for existing and future elements, with better performance than individual handlers."
+      }
+    },
+    {
+      "id": "vibe-prompting-001",
+      "topic": "vibe-prompting",
+      "difficulty": "easy",
+      "stem": "You want Claude to write a function that validates email addresses. Which prompt is most likely to produce high-quality, working code?",
+      "options": [
+        { "id": "A", "text": "Write email validation" },
+        { "id": "B", "text": "Write a TypeScript function called validateEmail that takes a string and returns true if it's a valid email format, false otherwise. Include common edge cases like missing @ symbol." },
+        { "id": "C", "text": "I need code for emails" },
+        { "id": "D", "text": "Make something that checks if emails work" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Specific prompts with clear requirements (language, function name, inputs/outputs, edge cases) produce better results.",
+        "incorrect": "Vague prompts lead to vague outputs. The AI can't read your mind—you need to specify what you want.",
+        "explanation": "Effective prompts for code generation include: the programming language, function/class name, input types and parameters, expected output/return type, and important edge cases or requirements. Option B provides all of these, while the others are too vague to produce reliable results."
+      }
+    },
+    {
+      "id": "vibe-prompting-002",
+      "topic": "vibe-prompting",
+      "difficulty": "medium",
+      "stem": "You're using Claude to help refactor a complex 500-line React component. What's the most effective approach?",
+      "options": [
+        { "id": "A", "text": "Paste the entire component and ask 'refactor this'" },
+        { "id": "B", "text": "Ask Claude to rewrite the whole thing from scratch based on a description" },
+        { "id": "C", "text": "Break it into smaller tasks: first extract hooks, then split into subcomponents, then optimize renders—one step at a time" },
+        { "id": "D", "text": "Send the file multiple times until Claude gets it right" }
+      ],
+      "correct": "C",
+      "feedback": {
+        "correct": "Correct! Breaking large tasks into focused steps produces better results and lets you validate each change.",
+        "incorrect": "Large, vague requests often produce incomplete or incorrect refactors. Incremental changes are easier to review.",
+        "explanation": "Vibecoding works best when you decompose complex tasks. Each step should be focused enough that you can verify the output. 'Extract the useAuth logic into a custom hook' is verifiable; 'refactor everything' is not. This also helps if something goes wrong—you can backtrack one step instead of losing everything."
+      }
+    },
+    {
+      "id": "vibe-prompting-003",
+      "topic": "vibe-prompting",
+      "difficulty": "hard",
+      "stem": "You've asked Claude to implement a caching layer and received working code. What prompt technique would help ensure the code handles edge cases you haven't thought of?",
+      "options": [
+        { "id": "A", "text": "Ask Claude: 'What edge cases or failure modes should this caching implementation handle that I haven't considered?'" },
+        { "id": "B", "text": "Just ship it—Claude probably covered everything" },
+        { "id": "C", "text": "Ask for the code again and compare the two versions" },
+        { "id": "D", "text": "Add more comments to your prompt" }
+      ],
+      "correct": "A",
+      "feedback": {
+        "correct": "Correct! Asking the AI to critique its own output or identify gaps is a powerful technique for discovering blind spots.",
+        "incorrect": "AI assistants can help you think more thoroughly—use them to challenge the code, not just generate it.",
+        "explanation": "This technique is called 'adversarial prompting' or 'red-teaming your own code.' By asking Claude to think about what could go wrong (cache invalidation race conditions, memory limits, TTL handling, cold starts), you leverage the AI's broad knowledge to catch issues you might miss. It's like having a code reviewer who's seen thousands of caching implementations."
+      }
+    },
+    {
+      "id": "vibe-review-001",
+      "topic": "vibe-review",
+      "difficulty": "easy",
+      "stem": "Claude generates this code for user authentication. What's the most critical issue to check first?",
+      "code": "async function login(username, password) {\n  const user = await db.query(\n    `SELECT * FROM users WHERE username='${username}' AND password='${password}'`\n  );\n  return user;\n}",
+      "options": [
+        { "id": "A", "text": "The function should use arrow syntax" },
+        { "id": "B", "text": "SQL injection vulnerability from string interpolation" },
+        { "id": "C", "text": "Missing TypeScript types" },
+        { "id": "D", "text": "Should use a different variable name" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! SQL injection is a critical security vulnerability. AI-generated code should always be reviewed for security issues.",
+        "incorrect": "Security vulnerabilities are the highest priority when reviewing any code, especially AI-generated code.",
+        "explanation": "This code is vulnerable to SQL injection—an attacker could input `' OR '1'='1` as the password to bypass authentication. AI models sometimes generate patterns from training data that include insecure practices. Always check for: SQL injection, XSS, hardcoded secrets, insecure dependencies, and improper input validation."
+      }
+    },
+    {
+      "id": "vibe-review-002",
+      "topic": "vibe-review",
+      "difficulty": "medium",
+      "stem": "You asked Claude to write a React hook for fetching user data. The code works in your tests, but what potential issue should you investigate?",
+      "code": "function useUserData(userId) {\n  const [user, setUser] = useState(null);\n  \n  useEffect(() => {\n    fetch(`/api/users/${userId}`)\n      .then(res => res.json())\n      .then(data => setUser(data));\n  }, [userId]);\n  \n  return user;\n}",
+      "options": [
+        { "id": "A", "text": "The hook name should be capitalized" },
+        { "id": "B", "text": "Race condition: if userId changes quickly, stale data might overwrite newer data" },
+        { "id": "C", "text": "Should use class components instead" },
+        { "id": "D", "text": "useState should come after useEffect" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Race conditions in async effects are a common bug that's easy to miss in basic testing.",
+        "incorrect": "This code has a subtle bug that only appears with rapid userId changes—AI often misses these timing issues.",
+        "explanation": "If userId changes from 1 to 2 quickly, both fetches run. If the fetch for user 1 returns after the fetch for user 2, you'll display user 1's data even though userId is 2. The fix: use an AbortController or a cleanup flag to ignore stale responses. AI-generated code often works for the 'happy path' but misses race conditions."
+      }
+    },
+    {
+      "id": "vibe-review-003",
+      "topic": "vibe-review",
+      "difficulty": "hard",
+      "stem": "Claude generates a sorting algorithm that passes all your test cases. Before shipping, what verification step is MOST important for production code?",
+      "options": [
+        { "id": "A", "text": "Check if the code style matches your linter rules" },
+        { "id": "B", "text": "Test with adversarial inputs: empty arrays, huge datasets, already-sorted data, all-duplicate values" },
+        { "id": "C", "text": "Count the lines of code to ensure it's concise" },
+        { "id": "D", "text": "Ask Claude if it thinks the code is correct" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Adversarial testing with edge cases catches bugs that 'normal' test cases miss.",
+        "incorrect": "AI-generated code often handles typical cases well but fails on edge cases. Testing boundaries is essential.",
+        "explanation": "AI-generated algorithms frequently fail on: empty inputs, single elements, maximum size inputs (performance), pre-sorted or reverse-sorted data, duplicate values, and boundary conditions. Your test suite should include these 'adversarial' cases. The AI wrote code that matches patterns from training data—it didn't reason about every edge case."
+      }
+    },
+    {
+      "id": "vibe-workflow-001",
+      "topic": "vibe-workflow",
+      "difficulty": "easy",
+      "stem": "You're starting a new feature and want to use Claude effectively. What's the best first step?",
+      "options": [
+        { "id": "A", "text": "Ask Claude to write all the code immediately" },
+        { "id": "B", "text": "Start by explaining the feature requirements and asking Claude to help you think through the architecture" },
+        { "id": "C", "text": "Write all the code yourself first, then ask Claude to review it" },
+        { "id": "D", "text": "Skip planning and iterate with Claude until something works" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Using AI for design and planning before coding leads to better architecture and fewer rewrites.",
+        "incorrect": "AI assistants are valuable for thinking through problems, not just generating code.",
+        "explanation": "Vibecoding isn't just 'AI writes code.' The most effective workflow uses AI at every stage: requirements clarification, architecture design, implementation, testing, and code review. Starting with planning helps catch issues early. 'Help me think through how to structure a real-time notification system' often saves hours compared to jumping straight to code."
+      }
+    },
+    {
+      "id": "vibe-workflow-002",
+      "topic": "vibe-workflow",
+      "difficulty": "medium",
+      "stem": "You're debugging a tricky issue where API calls work locally but fail in production. How can Claude best help?",
+      "options": [
+        { "id": "A", "text": "Paste your entire codebase and ask 'why doesn't this work?'" },
+        { "id": "B", "text": "Share the specific error message, relevant code, environment differences, and what you've already tried" },
+        { "id": "C", "text": "Ask Claude to rewrite all your API code from scratch" },
+        { "id": "D", "text": "Keep asking 'is this the bug?' for random lines of code" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Structured debugging context helps Claude provide targeted, useful suggestions.",
+        "incorrect": "Vague debugging requests get vague answers. Give Claude the context it needs to help you.",
+        "explanation": "Effective debugging with AI requires: 1) The exact error message or unexpected behavior, 2) Relevant code snippets (not the whole codebase), 3) Environment context (local vs prod differences), 4) What you've already tried. This mirrors how you'd ask a senior developer for help—context makes the difference between 'have you checked CORS?' and an actual solution."
+      }
+    },
+    {
+      "id": "vibe-workflow-003",
+      "topic": "vibe-workflow",
+      "difficulty": "hard",
+      "stem": "Your team wants to adopt AI coding assistants. What practice is MOST important to establish?",
+      "options": [
+        { "id": "A", "text": "Ban AI for 'important' code and only use it for boilerplate" },
+        { "id": "B", "text": "Let each developer use AI however they want with no guidelines" },
+        { "id": "C", "text": "Establish that AI-generated code gets the same review rigor as human code, plus explicit checks for common AI failure modes" },
+        { "id": "D", "text": "Require AI attribution in code comments for legal reasons" }
+      ],
+      "correct": "C",
+      "feedback": {
+        "correct": "Correct! AI-generated code should meet all normal quality standards, with additional attention to AI-specific pitfalls.",
+        "incorrect": "The source of code (human or AI) matters less than whether it's correct, secure, and maintainable.",
+        "explanation": "Teams that succeed with AI assistants treat AI output as a starting point, not a finished product. Code review should check for: security vulnerabilities (AI training data includes vulnerable patterns), hallucinated APIs or dependencies, subtle logic errors in edge cases, and violations of team conventions. The code review process stays the same—you're reviewing code, not validating the AI."
+      }
+    },
+    {
+      "id": "react-hooks-001",
+      "topic": "react-hooks",
+      "difficulty": "easy",
+      "stem": "What will be displayed after clicking the button once?",
+      "code": "function Counter() {\n  const [count, setCount] = useState(0);\n  \n  const handleClick = () => {\n    setCount(count + 1);\n    setCount(count + 1);\n  };\n  \n  return <button onClick={handleClick}>{count}</button>;\n}",
+      "options": [
+        { "id": "A", "text": "0" },
+        { "id": "B", "text": "1" },
+        { "id": "C", "text": "2" },
+        { "id": "D", "text": "Error: can't call setCount twice" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Both setCount calls use the same stale `count` value (0), so both set it to 1.",
+        "incorrect": "State updates using the current value are batched—both calls see the same `count`.",
+        "explanation": "React batches state updates for performance. Both `setCount(count + 1)` calls happen in the same render, so both read `count` as 0 and try to set it to 1. To increment twice, use the functional form: `setCount(prev => prev + 1)` which always uses the latest state."
+      }
+    },
+    {
+      "id": "react-hooks-002",
+      "topic": "react-hooks",
+      "difficulty": "medium",
+      "stem": "What happens when this component mounts?",
+      "code": "function DataFetcher() {\n  const [data, setData] = useState(null);\n  \n  useEffect(() => {\n    fetch('/api/data')\n      .then(res => res.json())\n      .then(setData);\n  });\n  \n  return <div>{data?.name}</div>;\n}",
+      "options": [
+        { "id": "A", "text": "Fetches data once when the component mounts" },
+        { "id": "B", "text": "Infinite loop: fetch → setData → re-render → fetch..." },
+        { "id": "C", "text": "Error: useEffect requires a dependency array" },
+        { "id": "D", "text": "Nothing happens because data starts as null" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Without a dependency array, useEffect runs after every render, creating an infinite loop.",
+        "incorrect": "useEffect with no dependency array runs on every render—what happens when setData triggers a re-render?",
+        "explanation": "Without a dependency array, useEffect runs after every render. When setData updates state, the component re-renders, which runs useEffect again, which fetches again, which calls setData again... Add `[]` as the second argument to run only on mount, or `[someValue]` to run when someValue changes."
+      }
+    },
+    {
+      "id": "react-hooks-003",
+      "topic": "react-hooks",
+      "difficulty": "hard",
+      "stem": "Why might this custom hook cause problems?",
+      "code": "function useDebounce(value, delay) {\n  const [debouncedValue, setDebouncedValue] = useState(value);\n  \n  useEffect(() => {\n    const timer = setTimeout(() => {\n      setDebouncedValue(value);\n    }, delay);\n    \n    return () => clearTimeout(timer);\n  }, [value]);\n  \n  return debouncedValue;\n}",
+      "options": [
+        { "id": "A", "text": "Missing `delay` in the dependency array—changing delay won't restart the timer" },
+        { "id": "B", "text": "Should use useRef instead of useState" },
+        { "id": "C", "text": "The cleanup function is unnecessary" },
+        { "id": "D", "text": "This hook is implemented correctly" }
+      ],
+      "correct": "A",
+      "feedback": {
+        "correct": "Correct! If `delay` changes, the effect won't re-run because it's not in the dependency array.",
+        "incorrect": "Check what the effect depends on—all values from the component scope should be in the array.",
+        "explanation": "The effect uses both `value` and `delay` from outside the effect. If `delay` changes (say, from 300ms to 1000ms), the effect won't re-run because `delay` isn't in the dependency array. This is a lint warning (exhaustive-deps rule) and a real bug. The fix: `[value, delay]`."
+      }
+    },
+    {
+      "id": "react-state-001",
+      "topic": "react-state",
+      "difficulty": "easy",
+      "stem": "What's wrong with this state update?",
+      "code": "function TodoList() {\n  const [todos, setTodos] = useState([{ id: 1, text: 'Learn React' }]);\n  \n  const addTodo = (text) => {\n    todos.push({ id: Date.now(), text });\n    setTodos(todos);\n  };\n  \n  return /* render todos */;\n}",
+      "options": [
+        { "id": "A", "text": "Should use useReducer instead of useState" },
+        { "id": "B", "text": "Mutating state directly—push modifies the original array, then setTodos receives the same reference" },
+        { "id": "C", "text": "Date.now() is not a valid ID" },
+        { "id": "D", "text": "Missing key prop in the render" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! React compares object references. Mutating and passing the same array won't trigger a re-render.",
+        "incorrect": "React needs a new array reference to detect changes. What does `push` return?",
+        "explanation": "Never mutate state directly! `todos.push()` modifies the existing array, then `setTodos(todos)` passes the same reference. React sees the same object reference and may skip re-rendering. Instead: `setTodos([...todos, { id: Date.now(), text }])` or `setTodos(prev => [...prev, newTodo])`."
+      }
+    },
+    {
+      "id": "react-state-002",
+      "topic": "react-state",
+      "difficulty": "medium",
+      "stem": "What value does `name` have when the alert shows?",
+      "code": "function Form() {\n  const [name, setName] = useState('Alice');\n  \n  const handleClick = () => {\n    setName('Bob');\n    alert(name);\n  };\n  \n  return <button onClick={handleClick}>Show Name</button>;\n}",
+      "options": [
+        { "id": "A", "text": "Bob" },
+        { "id": "B", "text": "Alice" },
+        { "id": "C", "text": "undefined" },
+        { "id": "D", "text": "Error: name is not defined" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! State updates are asynchronous. The alert uses the `name` value from this render, not the next one.",
+        "incorrect": "setName schedules an update for the next render. What value does `name` have right now?",
+        "explanation": "React state updates are asynchronous—`setName('Bob')` schedules a re-render with the new value, but doesn't change `name` in the current execution. The `name` variable in this closure still holds 'Alice'. To see the new value, you'd need to wait for the re-render or use `useEffect`."
+      }
+    },
+    {
+      "id": "react-state-003",
+      "topic": "react-state",
+      "difficulty": "hard",
+      "stem": "This component has a bug when rapidly clicking 'Increment'. What's the issue?",
+      "code": "function AsyncCounter() {\n  const [count, setCount] = useState(0);\n  \n  const increment = async () => {\n    await fetch('/api/log-click');\n    setCount(count + 1);\n  };\n  \n  return <button onClick={increment}>{count}</button>;\n}",
+      "options": [
+        { "id": "A", "text": "async/await can't be used in React event handlers" },
+        { "id": "B", "text": "Stale closure: if clicked 3x quickly, all 3 calls use count=0, resulting in count=1" },
+        { "id": "C", "text": "fetch() is not allowed in onClick handlers" },
+        { "id": "D", "text": "Missing error handling for the fetch" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Each click captures `count` from its render. After await, they all try to set count to the same value.",
+        "incorrect": "What value does `count` have when each async function resumes after the await?",
+        "explanation": "Each click creates a closure that captures `count` at click time. If you click 3 times before any fetch completes, all 3 closures have `count = 0`. When they resume and call `setCount(count + 1)`, they all set it to 1. Fix: use functional update `setCount(c => c + 1)` which always uses the latest state."
+      }
+    },
+    {
+      "id": "react-rendering-001",
+      "topic": "react-rendering",
+      "difficulty": "easy",
+      "stem": "Why does this list have a React warning in the console?",
+      "code": "function UserList({ users }) {\n  return (\n    <ul>\n      {users.map(user => (\n        <li>{user.name}</li>\n      ))}\n    </ul>\n  );\n}",
+      "options": [
+        { "id": "A", "text": "Should use forEach instead of map" },
+        { "id": "B", "text": "Missing `key` prop on the <li> elements" },
+        { "id": "C", "text": "Can't use curly braces inside JSX" },
+        { "id": "D", "text": "user.name might be undefined" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! React needs keys to efficiently update lists. Each item needs a unique, stable key.",
+        "incorrect": "React gives a specific warning about lists. What does it say is missing?",
+        "explanation": "When rendering arrays, React needs a `key` prop to identify which items changed, were added, or removed. Without keys, React has to re-render all items. Fix: `<li key={user.id}>{user.name}</li>`. Use stable IDs, not array indices (unless the list never reorders)."
+      }
+    },
+    {
+      "id": "react-rendering-002",
+      "topic": "react-rendering",
+      "difficulty": "medium",
+      "stem": "When does the Child component re-render?",
+      "code": "function Parent() {\n  const [count, setCount] = useState(0);\n  const [name, setName] = useState('Alice');\n  \n  return (\n    <div>\n      <button onClick={() => setCount(c => c + 1)}>\n        Count: {count}\n      </button>\n      <Child name={name} />\n    </div>\n  );\n}\n\nfunction Child({ name }) {\n  console.log('Child rendered');\n  return <span>{name}</span>;\n}",
+      "options": [
+        { "id": "A", "text": "Only when `name` changes" },
+        { "id": "B", "text": "Every time the button is clicked (when Parent re-renders)" },
+        { "id": "C", "text": "Never, because name never changes" },
+        { "id": "D", "text": "Only on initial mount" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! By default, when Parent re-renders, all its children re-render too—even if their props didn't change.",
+        "incorrect": "React re-renders children when their parent re-renders, regardless of prop changes.",
+        "explanation": "React's default behavior is to re-render all children when a parent re-renders. Even though `name` doesn't change when clicking the button, Child still re-renders. To prevent this, wrap Child in `React.memo()`: `const Child = React.memo(({ name }) => ...)`. Then it only re-renders when `name` actually changes."
+      }
+    },
+    {
+      "id": "react-rendering-003",
+      "topic": "react-rendering",
+      "difficulty": "hard",
+      "stem": "Even with React.memo, this Child re-renders on every Parent render. Why?",
+      "code": "function Parent() {\n  const [count, setCount] = useState(0);\n  \n  const config = { theme: 'dark' };\n  \n  return (\n    <div>\n      <button onClick={() => setCount(c => c + 1)}>{count}</button>\n      <Child config={config} />\n    </div>\n  );\n}\n\nconst Child = React.memo(({ config }) => {\n  console.log('Child rendered');\n  return <div>{config.theme}</div>;\n});",
+      "options": [
+        { "id": "A", "text": "React.memo doesn't work with object props" },
+        { "id": "B", "text": "`config` is a new object reference on every render, failing memo's shallow comparison" },
+        { "id": "C", "text": "memo() should be called differently" },
+        { "id": "D", "text": "The Child component syntax is wrong" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! `{ theme: 'dark' }` creates a new object every render. memo compares by reference, not by value.",
+        "incorrect": "React.memo does a shallow comparison. What does that mean for object props?",
+        "explanation": "Every time Parent renders, `const config = { theme: 'dark' }` creates a brand new object. Even though it has the same content, it's a different reference. React.memo's shallow comparison sees different references and re-renders. Fix: `const config = useMemo(() => ({ theme: 'dark' }), [])` to maintain referential equality."
+      }
+    },
+    {
+      "id": "react-patterns-001",
+      "topic": "react-patterns",
+      "difficulty": "easy",
+      "stem": "What React pattern does this code demonstrate?",
+      "code": "function Card({ children }) {\n  return (\n    <div className=\"card\">\n      <div className=\"card-body\">\n        {children}\n      </div>\n    </div>\n  );\n}\n\n// Usage:\n<Card>\n  <h2>Title</h2>\n  <p>Content goes here</p>\n</Card>",
+      "options": [
+        { "id": "A", "text": "Higher-Order Component (HOC)" },
+        { "id": "B", "text": "Render Props" },
+        { "id": "C", "text": "Composition using children prop" },
+        { "id": "D", "text": "Controlled Component" }
+      ],
+      "correct": "C",
+      "feedback": {
+        "correct": "Correct! The `children` prop allows components to wrap other content, enabling composition.",
+        "incorrect": "This pattern lets you pass JSX as content to a wrapper component.",
+        "explanation": "Composition with `children` is React's preferred pattern for reusability. Instead of using inheritance, you compose components by nesting them. The Card component doesn't need to know what's inside—it just provides the wrapper structure. This is more flexible than creating CardWithTitle, CardWithContent, etc."
+      }
+    },
+    {
+      "id": "react-patterns-002",
+      "topic": "react-patterns",
+      "difficulty": "medium",
+      "stem": "What pattern should you use to share an input's value between components without prop drilling?",
+      "code": "// Need to share `searchTerm` between Header, Sidebar, and ProductList\n// These components are deeply nested and not direct parent-children",
+      "options": [
+        { "id": "A", "text": "Pass it through every intermediate component as props" },
+        { "id": "B", "text": "Use React Context to provide the value at a common ancestor" },
+        { "id": "C", "text": "Store it in localStorage and read from there" },
+        { "id": "D", "text": "Use window.searchTerm as a global variable" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Context lets you share state across the tree without manually passing props at every level.",
+        "incorrect": "Prop drilling becomes unmaintainable. React has a built-in solution for this.",
+        "explanation": "React Context is designed for sharing state that many components need (themes, user data, search terms). Create a context with `createContext()`, wrap your tree with a Provider, and consume with `useContext()`. This avoids passing props through components that don't need them."
+      }
+    },
+    {
+      "id": "react-patterns-003",
+      "topic": "react-patterns",
+      "difficulty": "hard",
+      "stem": "What's the benefit of this pattern over simply passing `isOpen` and `setIsOpen` as props?",
+      "code": "function Modal({ children }) {\n  const [isOpen, setIsOpen] = useState(false);\n  \n  return children({\n    isOpen,\n    open: () => setIsOpen(true),\n    close: () => setIsOpen(false),\n    toggle: () => setIsOpen(o => !o)\n  });\n}\n\n// Usage:\n<Modal>\n  {({ isOpen, open, close }) => (\n    <>\n      <button onClick={open}>Open Modal</button>\n      {isOpen && <div className=\"modal\">Content <button onClick={close}>×</button></div>}\n    </>\n  )}\n</Modal>",
+      "options": [
+        { "id": "A", "text": "It's faster because it avoids re-renders" },
+        { "id": "B", "text": "The Modal component owns its state—consumers get a clean API without managing state themselves" },
+        { "id": "C", "text": "It prevents the modal from being closed accidentally" },
+        { "id": "D", "text": "This pattern is outdated and shouldn't be used" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Render props let a component encapsulate logic while giving consumers full control over rendering.",
+        "incorrect": "This pattern inverts control—the Modal manages state, but the consumer controls the UI.",
+        "explanation": "This 'render props' pattern (passing a function as children) encapsulates the open/close logic inside Modal. Consumers don't need to create their own `useState`—they just use the provided API. The Modal could add features (animations, escape key handling) without changing the consumer's code. It's the 'inversion of control' pattern."
+      }
+    },
+    {
+      "id": "plasma-cells-001",
+      "topic": "plasma-cells",
+      "difficulty": "easy",
+      "stem": "Plasma cells are the terminally differentiated form of which immune cell type?",
+      "options": [
+        { "id": "A", "text": "T lymphocytes" },
+        { "id": "B", "text": "B lymphocytes" },
+        { "id": "C", "text": "Natural killer cells" },
+        { "id": "D", "text": "Macrophages" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Plasma cells are the antibody-secreting end stage of B cell differentiation.",
+        "incorrect": "Think about which immune cells are responsible for producing antibodies.",
+        "explanation": "B lymphocytes (B cells) differentiate into plasma cells upon activation by antigen. This is the terminal differentiation pathway—plasma cells are specialized antibody factories that have downregulated most B cell surface markers and dedicated their cellular machinery to immunoglobulin production and secretion."
+      }
+    },
+    {
+      "id": "plasma-cells-002",
+      "topic": "plasma-cells",
+      "difficulty": "easy",
+      "stem": "What is the primary function of plasma cells?",
+      "options": [
+        { "id": "A", "text": "Phagocytosis of pathogens" },
+        { "id": "B", "text": "Secretion of antibodies (immunoglobulins)" },
+        { "id": "C", "text": "Presentation of antigens to T cells" },
+        { "id": "D", "text": "Direct killing of virus-infected cells" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Plasma cells are professional antibody-secreting cells, producing thousands of antibody molecules per second.",
+        "incorrect": "Plasma cells have one specialized job in the immune system.",
+        "explanation": "Plasma cells are essentially antibody factories. A single plasma cell can secrete several thousand antibody molecules per second. They have an extensively developed endoplasmic reticulum and Golgi apparatus to support this massive protein synthesis and secretion. This is their sole function—they don't phagocytose, present antigen, or directly kill cells."
+      }
+    },
+    {
+      "id": "plasma-cells-003",
+      "topic": "plasma-cells",
+      "difficulty": "medium",
+      "stem": "Which surface marker is characteristically expressed on plasma cells but NOT on naive B cells?",
+      "options": [
+        { "id": "A", "text": "CD19" },
+        { "id": "B", "text": "CD20" },
+        { "id": "C", "text": "CD138 (Syndecan-1)" },
+        { "id": "D", "text": "Surface IgM" }
+      ],
+      "correct": "C",
+      "feedback": {
+        "correct": "Correct! CD138 (Syndecan-1) is the classic plasma cell marker, upregulated during terminal differentiation.",
+        "incorrect": "Consider which markers are gained vs lost during B cell to plasma cell differentiation.",
+        "explanation": "CD138 (Syndecan-1) is acquired during plasma cell differentiation and is the key marker used to identify plasma cells. In contrast, CD19 and CD20 are pan-B cell markers that are downregulated or lost on mature plasma cells. Surface immunoglobulin is also lost as plasma cells switch to secreting rather than displaying antibodies."
+      }
+    },
+    {
+      "id": "plasma-cells-004",
+      "topic": "plasma-cells",
+      "difficulty": "medium",
+      "stem": "Where do long-lived plasma cells primarily reside after an immune response?",
+      "options": [
+        { "id": "A", "text": "Circulating in the bloodstream" },
+        { "id": "B", "text": "Lymph node germinal centers" },
+        { "id": "C", "text": "Bone marrow" },
+        { "id": "D", "text": "Thymus" }
+      ],
+      "correct": "C",
+      "feedback": {
+        "correct": "Correct! The bone marrow provides survival niches for long-lived plasma cells, enabling years of antibody production.",
+        "incorrect": "Long-lived plasma cells migrate to a specific anatomical location that supports their survival.",
+        "explanation": "After differentiation in secondary lymphoid organs, long-lived plasma cells migrate to the bone marrow where they can survive for years or even decades. The bone marrow provides specialized survival niches with stromal cells that produce factors like IL-6, APRIL, and CXCL12. These cells continuously secrete antibodies, providing long-term humoral immunity without requiring re-exposure to antigen."
+      }
+    },
+    {
+      "id": "plasma-cells-005",
+      "topic": "plasma-cells",
+      "difficulty": "medium",
+      "stem": "Which transcription factor is essential for plasma cell differentiation and is often called the 'master regulator' of plasma cell development?",
+      "options": [
+        { "id": "A", "text": "PAX5" },
+        { "id": "B", "text": "BLIMP-1 (PRDM1)" },
+        { "id": "C", "text": "BCL-6" },
+        { "id": "D", "text": "IRF4 alone" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! BLIMP-1 (encoded by PRDM1) is the master transcription factor that drives plasma cell differentiation.",
+        "incorrect": "One transcription factor acts as the key switch that commits B cells to become plasma cells.",
+        "explanation": "BLIMP-1 (B lymphocyte-induced maturation protein 1) is essential for plasma cell differentiation. It represses genes required for B cell identity (including PAX5 and BCL-6) while activating the plasma cell program. PAX5 maintains B cell identity, BCL-6 is important for germinal center B cells, and while IRF4 cooperates with BLIMP-1, BLIMP-1 is considered the master regulator."
+      }
+    },
+    {
+      "id": "plasma-cells-006",
+      "topic": "plasma-cells",
+      "difficulty": "hard",
+      "stem": "A patient has a monoclonal plasma cell proliferation. Which finding would suggest multiple myeloma rather than monoclonal gammopathy of undetermined significance (MGUS)?",
+      "options": [
+        { "id": "A", "text": "Presence of serum M-protein" },
+        { "id": "B", "text": "Bone marrow plasma cells comprising 5% of cellularity" },
+        { "id": "C", "text": "Lytic bone lesions on imaging" },
+        { "id": "D", "text": "Age over 50 years" }
+      ],
+      "correct": "C",
+      "feedback": {
+        "correct": "Correct! End-organ damage (CRAB criteria: hyperCalcemia, Renal insufficiency, Anemia, Bone lesions) distinguishes myeloma from MGUS.",
+        "incorrect": "The key distinction between MGUS and myeloma is the presence of end-organ damage.",
+        "explanation": "Both MGUS and multiple myeloma have clonal plasma cells and M-protein. The critical difference is end-organ damage—the CRAB criteria. Lytic bone lesions indicate the malignant plasma cells are causing tissue destruction. MGUS by definition has <10% bone marrow plasma cells, M-protein <3 g/dL, and NO end-organ damage. When damage occurs, it's myeloma."
+      }
+    },
+    {
+      "id": "plasma-cells-007",
+      "topic": "plasma-cells",
+      "difficulty": "hard",
+      "stem": "During class switch recombination in activated B cells (which later become plasma cells), which enzyme introduces DNA double-strand breaks at switch regions?",
+      "options": [
+        { "id": "A", "text": "RAG1/RAG2 recombinase" },
+        { "id": "B", "text": "Activation-induced cytidine deaminase (AID)" },
+        { "id": "C", "text": "Terminal deoxynucleotidyl transferase (TdT)" },
+        { "id": "D", "text": "DNA-dependent protein kinase (DNA-PK)" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! AID initiates class switch recombination by deaminating cytosines in switch region DNA, leading to double-strand breaks.",
+        "incorrect": "Think about which enzyme is uniquely active in germinal center B cells during affinity maturation.",
+        "explanation": "AID (Activation-induced cytidine deaminase) is essential for both somatic hypermutation and class switch recombination. It deaminates cytosines to uracils in switch region DNA, which are then processed into double-strand breaks. RAG1/2 mediates V(D)J recombination in early B cell development, TdT adds N-nucleotides during V(D)J recombination, and DNA-PK helps repair the breaks but doesn't initiate them."
+      }
+    },
+    {
+      "id": "plasma-cells-008",
+      "topic": "plasma-cells",
+      "difficulty": "hard",
+      "stem": "Which cytokine produced by T follicular helper (Tfh) cells is critical for promoting B cell differentiation into antibody-secreting plasma cells?",
+      "options": [
+        { "id": "A", "text": "IL-2" },
+        { "id": "B", "text": "IL-21" },
+        { "id": "C", "text": "IL-12" },
+        { "id": "D", "text": "TNF-alpha" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! IL-21 is the signature cytokine of Tfh cells and is crucial for plasma cell differentiation and antibody production.",
+        "incorrect": "Tfh cells in germinal centers produce a specific cytokine that drives B cells toward plasma cell fate.",
+        "explanation": "IL-21, produced primarily by T follicular helper cells, is critical for B cell differentiation into plasma cells. It promotes the expression of BLIMP-1 and enhances immunoglobulin secretion. IL-21 also supports germinal center reactions and memory B cell formation. IL-2 supports T cell proliferation, IL-12 drives Th1 responses, and TNF-alpha is a pro-inflammatory cytokine."
+      }
+    },
+    {
+      "id": "plasma-cells-009",
+      "topic": "plasma-cells",
+      "difficulty": "easy",
+      "stem": "What distinguishes short-lived plasmablasts from long-lived plasma cells?",
+      "options": [
+        { "id": "A", "text": "Plasmablasts cannot secrete antibodies" },
+        { "id": "B", "text": "Plasmablasts are still proliferating and haven't fully matured" },
+        { "id": "C", "text": "Only long-lived plasma cells express CD138" },
+        { "id": "D", "text": "Plasmablasts produce IgM while plasma cells produce IgG" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Plasmablasts are proliferating, partially differentiated cells; plasma cells are terminally differentiated and non-dividing.",
+        "incorrect": "Think about the developmental stage and proliferative capacity of these cells.",
+        "explanation": "Plasmablasts are an intermediate stage—they're actively dividing cells that secrete antibody but haven't fully committed to the plasma cell program. They retain some B cell markers and proliferative capacity. Mature plasma cells are terminally differentiated, non-dividing, and have completely downregulated B cell markers. Both can secrete antibodies of any isotype and express CD138."
+      }
+    }
+  ]
+}
