@@ -280,6 +280,22 @@ async function main() {
         return;
       }
 
+      if (req.url === "/" && req.method === "GET") {
+        // Health check / info endpoint
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({
+          name: "MCQMCP",
+          version: "0.1.0",
+          status: "running",
+          endpoints: {
+            sse: "/sse",
+            messages: "/messages"
+          },
+          docs: "https://github.com/JDerekLomas/MCQMCP"
+        }));
+        return;
+      }
+
       if (req.url === "/sse" && req.method === "GET") {
         // SSE endpoint for server-to-client messages
         transport = new SSEServerTransport("/messages", res);
