@@ -259,6 +259,71 @@ server.tool(
   }
 );
 
+// Tool handlers for REST API
+type ToolName = "mcq_generate" | "mcq_record" | "mcq_get_status";
+
+interface ToolRequest {
+  name: ToolName;
+  arguments: Record<string, unknown>;
+}
+
+async function handleToolCall(name: ToolName, args: Record<string, unknown>): Promise<unknown> {
+  switch (name) {
+    case "mcq_generate": {
+      const { user_id, objective, difficulty } = args as { user_id: string; objective: string; difficulty: "easy" | "medium" | "hard" };
+      const questions: Record<string, { question: string; options: Record<string, string>; correct_answer: string; explanation: string }> = {
+        easy: {
+          question: `[Easy] What is a key concept related to: ${objective}?`,
+          options: { A: "The correct fundamental concept", B: "A common misconception", C: "An unrelated concept", D: "A partially correct idea" },
+          correct_answer: "A",
+          explanation: `The correct answer demonstrates understanding of the basics of ${objective}.`,
+        },
+        medium: {
+          question: `[Medium] How would you apply the concept of: ${objective}?`,
+          options: { A: "Apply it incorrectly", B: "Apply it in an unrelated context", C: "Apply it correctly with proper reasoning", D: "Avoid applying it altogether" },
+          correct_answer: "C",
+          explanation: `Proper application of ${objective} requires understanding both the concept and its context.`,
+        },
+        hard: {
+          question: `[Hard] Analyze the implications of: ${objective}`,
+          options: { A: "Surface-level analysis only", B: "Misunderstanding the core principle", C: "Partial analysis missing key aspects", D: "Deep analysis considering multiple perspectives and edge cases" },
+          correct_answer: "D",
+          explanation: `Advanced understanding of ${objective} requires considering multiple perspectives and edge cases.`,
+        },
+      };
+      const q = questions[difficulty];
+      return { user_id, objective, difficulty, question: q.question, options: q.options, correct_answer: q.correct_answer, explanation: q.explanation };
+    }
+
+    case "mcq_record": {
+      const { user_id, objective, selected_answer, correct_answer } = args as { user_id: string; objective: string; selected_answer: string; correct_answer: string };
+      const { data: existing } = await supabase.from("mastery").select("correct, total").eq("user_id", user_id).eq("objective", objective).single();
+      let correctCount = existing?.correct ?? 0;
+      let totalCount = existing?.total ?? 0;
+      const wasCorrect = selected_answer.toUpperCase() === correct_answer.toUpperCase();
+      if (wasCorrect) correctCount++;
+      totalCount++;
+      const { error } = await supabase.from("mastery").upsert({ user_id, objective, correct: correctCount, total: totalCount, updated_at: new Date().toISOString() }, { onConflict: "user_id,objective" });
+      if (error) console.error("Supabase error:", error);
+      return { user_id, objective, was_correct: wasCorrect, correct: correctCount, total: totalCount, mastery: totalCount > 0 ? correctCount / totalCount : 0 };
+    }
+
+    case "mcq_get_status": {
+      const { user_id, objective } = args as { user_id: string; objective?: string };
+      if (objective) {
+        const { data: row } = await supabase.from("mastery").select("correct, total").eq("user_id", user_id).eq("objective", objective).single();
+        if (!row) return { user_id, objective, status: "no_data" };
+        return { user_id, objective, correct: row.correct, total: row.total, mastery: row.total > 0 ? row.correct / row.total : 0 };
+      }
+      const { data: rows } = await supabase.from("mastery").select("objective, correct, total").eq("user_id", user_id);
+      return { user_id, objectives: (rows || []).map((r) => ({ objective: r.objective, correct: r.correct, total: r.total, mastery: r.total > 0 ? r.correct / r.total : 0 })) };
+    }
+
+    default:
+      throw new Error(`Unknown tool: ${name}`);
+  }
+}
+
 // Main function to start the server
 async function main() {
   const useHttp = process.argv.includes("--http");
@@ -280,19 +345,53 @@ async function main() {
         return;
       }
 
+      // Health check with DB status
       if (req.url === "/" && req.method === "GET") {
-        // Health check / info endpoint
+        let dbStatus = "unknown";
+        try {
+          const { error } = await supabase.from("mastery").select("user_id").limit(1);
+          dbStatus = error ? "error" : "connected";
+        } catch {
+          dbStatus = "error";
+        }
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(JSON.stringify({
           name: "MCQMCP",
           version: "0.1.0",
-          status: "running",
+          status: "ok",
+          database: dbStatus,
           endpoints: {
+            health: "/",
             sse: "/sse",
-            messages: "/messages"
+            messages: "/messages",
+            api: "/api/tools/call"
           },
+          tools: ["mcq_generate", "mcq_record", "mcq_get_status"],
           docs: "https://github.com/JDerekLomas/MCQMCP"
         }));
+        return;
+      }
+
+      // REST API endpoint for tool calls (stateless, no SSE required)
+      if (req.url === "/api/tools/call" && req.method === "POST") {
+        let body = "";
+        req.on("data", (chunk) => (body += chunk));
+        req.on("end", async () => {
+          try {
+            const request = JSON.parse(body) as ToolRequest;
+            if (!request.name || !request.arguments) {
+              res.writeHead(400, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ error: "Missing 'name' or 'arguments' in request body" }));
+              return;
+            }
+            const result = await handleToolCall(request.name, request.arguments);
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: true, result }));
+          } catch (error) {
+            res.writeHead(500, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: false, error: error instanceof Error ? error.message : "Unknown error" }));
+          }
+        });
         return;
       }
 
@@ -325,6 +424,8 @@ async function main() {
 
     httpServer.listen(port, () => {
       console.error(`MCQMCP server running on http://localhost:${port}`);
+      console.error(`Health check: http://localhost:${port}/`);
+      console.error(`REST API: http://localhost:${port}/api/tools/call`);
       console.error(`SSE endpoint: http://localhost:${port}/sse`);
       console.error(`Messages endpoint: http://localhost:${port}/messages`);
       console.error(`Supabase: ${supabaseUrl}`);

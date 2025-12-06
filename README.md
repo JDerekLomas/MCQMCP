@@ -31,20 +31,164 @@ MCQMCP/
 └── package.json         # Workspace root
 ```
 
+## API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/` | GET | Health check with DB status |
+| `/api/tools/call` | POST | REST API for tool calls (stateless) |
+| `/sse` | GET | MCP SSE endpoint |
+| `/messages` | POST | MCP messages endpoint |
+
 ## MCP Server Tools
 
-| Tool | Description | Inputs |
-|------|-------------|--------|
-| `mcq_generate` | Generate an MCQ for a learning objective | `user_id`, `objective`, `difficulty` |
-| `mcq_record` | Record a learner's response and update mastery | `user_id`, `objective`, `selected_answer`, `correct_answer` |
-| `mcq_get_status` | Get mastery status | `user_id`, `objective` (optional) |
+### `mcq_generate`
+Generate an MCQ for a learning objective.
 
-## Data Logging & Storage
+**Request:**
+```json
+{
+  "name": "mcq_generate",
+  "arguments": {
+    "user_id": "user123",
+    "objective": "Understanding React hooks",
+    "difficulty": "medium"
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "user_id": "user123",
+  "objective": "Understanding React hooks",
+  "difficulty": "medium",
+  "question": "[Medium] How would you apply the concept of: Understanding React hooks?",
+  "options": {
+    "A": "Apply it incorrectly",
+    "B": "Apply it in an unrelated context",
+    "C": "Apply it correctly with proper reasoning",
+    "D": "Avoid applying it altogether"
+  },
+  "correct_answer": "C",
+  "explanation": "Proper application requires understanding both the concept and its context."
+}
+```
+
+### `mcq_record`
+Record a learner's response and update mastery.
+
+**Request:**
+```json
+{
+  "name": "mcq_record",
+  "arguments": {
+    "user_id": "user123",
+    "objective": "Understanding React hooks",
+    "selected_answer": "C",
+    "correct_answer": "C"
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "user_id": "user123",
+  "objective": "Understanding React hooks",
+  "was_correct": true,
+  "correct": 3,
+  "total": 4,
+  "mastery": 0.75
+}
+```
+
+### `mcq_get_status`
+Get mastery status for a user.
+
+**Request:**
+```json
+{
+  "name": "mcq_get_status",
+  "arguments": {
+    "user_id": "user123",
+    "objective": "Understanding React hooks"
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "user_id": "user123",
+  "objective": "Understanding React hooks",
+  "correct": 3,
+  "total": 4,
+  "mastery": 0.75
+}
+```
+
+## Quick Start
+
+### Option 1: REST API (Recommended for web apps)
+
+```bash
+# Generate a question
+curl -X POST https://mcqmcp.onrender.com/api/tools/call \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "mcq_generate",
+    "arguments": {
+      "user_id": "user123",
+      "objective": "JavaScript closures",
+      "difficulty": "medium"
+    }
+  }'
+
+# Record a response
+curl -X POST https://mcqmcp.onrender.com/api/tools/call \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "mcq_record",
+    "arguments": {
+      "user_id": "user123",
+      "objective": "JavaScript closures",
+      "selected_answer": "B",
+      "correct_answer": "B"
+    }
+  }'
+
+# Check health
+curl https://mcqmcp.onrender.com/
+```
+
+### Option 2: MCP Protocol (For Claude Desktop, etc.)
+
+```typescript
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
+
+const transport = new SSEClientTransport(
+  new URL("https://mcqmcp.onrender.com/sse")
+);
+const client = new Client({ name: "my-app", version: "1.0.0" });
+await client.connect(transport);
+
+const result = await client.callTool({
+  name: "mcq_generate",
+  arguments: {
+    user_id: "user123",
+    objective: "Understanding React hooks",
+    difficulty: "medium"
+  }
+});
+```
+
+## Data Storage
 
 ### MCP Server (Production)
 - **Database:** Supabase Postgres
 - **Table:** `mastery` (user_id, objective, correct, total, updated_at)
-- **Access:** Via `mcq_record` (write) and `mcq_get_status` (read)
 
 ```sql
 CREATE TABLE mastery (
@@ -62,70 +206,7 @@ CREATE TABLE mastery (
 - **Tables:** `assessment_responses`, `generated_items`, `user_contexts`
 - **Access:** Via REST API at `/api/log-response`
 
-```bash
-# Get stats and recent logs
-GET /api/log-response
-
-# Log a response
-POST /api/log-response
-{
-  "item_id": "js-closures-001",
-  "selected": "B",
-  "correct": "B",
-  "is_correct": true,
-  "latency_ms": 12500,
-  "timestamp": "2025-12-06T15:30:00Z",
-  "session_id": "uuid-here"
-}
-```
-
-**View logged data:** Settings Modal in the website UI, or query the API directly.
-
-> **Note:** The website demo uses its own local tools and database for the interactive demo. The MCP server is the production system for external clients.
-
-## Quick Start
-
-### Connect to MCP Server
-
-```typescript
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
-
-const transport = new SSEClientTransport(
-  new URL("https://mcqmcp.onrender.com/sse")
-);
-const client = new Client({ name: "my-app", version: "1.0.0" });
-await client.connect(transport);
-
-// Generate a question
-const result = await client.callTool({
-  name: "mcq_generate",
-  arguments: {
-    user_id: "user123",
-    objective: "Understanding React hooks",
-    difficulty: "medium"
-  }
-});
-
-// Record a response
-await client.callTool({
-  name: "mcq_record",
-  arguments: {
-    user_id: "user123",
-    objective: "Understanding React hooks",
-    selected_answer: "C",
-    correct_answer: "C"
-  }
-});
-
-// Check mastery status
-const status = await client.callTool({
-  name: "mcq_get_status",
-  arguments: {
-    user_id: "user123"
-  }
-});
-```
+> **Note:** The website demo uses its own local tools and database. The MCP server is the production system for external clients.
 
 ## Local Development
 
@@ -146,13 +227,11 @@ npm run dev:server
 - Connected to this repo
 - Builds from `packages/website`
 - Domain: `mcqmcp.vercel.app`
-- Requires `ANTHROPIC_API_KEY` env var
 
 ### Server (Render)
 - Connected to this repo
 - Builds from `packages/server`
 - URL: `mcqmcp.onrender.com`
-- Requires `SUPABASE_URL` and `SUPABASE_KEY` env vars
 
 ## Environment Variables
 

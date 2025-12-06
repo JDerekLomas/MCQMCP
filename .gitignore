@@ -33,3 +33,4 @@ coverage/
 
 # Database
 *.db
+.vercel
