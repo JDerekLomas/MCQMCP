@@ -105,9 +105,28 @@ server.tool(
     objective: z.string().describe("The learning objective tested"),
     selected_answer: z.string().describe("The answer selected by the learner (A, B, C, or D)"),
     correct_answer: z.string().describe("The correct answer (A, B, C, or D)"),
+    session_id: z.string().optional().describe("Optional session ID to group responses"),
+    response_time_ms: z.number().optional().describe("Time taken to respond in milliseconds"),
   },
-  async ({ user_id, objective, selected_answer, correct_answer }) => {
-    // Get current stats from Supabase
+  async ({ user_id, objective, selected_answer, correct_answer, session_id, response_time_ms }) => {
+    const wasCorrect = selected_answer.toUpperCase() === correct_answer.toUpperCase();
+
+    // 1. Log individual response to responses table
+    const { error: responseError } = await supabase.from("responses").insert({
+      session_id: session_id || null,
+      user_id,
+      objective,
+      selected_answer: selected_answer.toUpperCase(),
+      correct_answer: correct_answer.toUpperCase(),
+      is_correct: wasCorrect,
+      response_time_ms: response_time_ms || null,
+    });
+
+    if (responseError) {
+      console.error("Supabase response logging error:", responseError);
+    }
+
+    // 2. Update aggregate mastery table for real-time feedback
     const { data: existing } = await supabase
       .from("mastery")
       .select("correct, total")
@@ -118,15 +137,12 @@ server.tool(
     let correctCount = existing?.correct ?? 0;
     let totalCount = existing?.total ?? 0;
 
-    // Update stats
-    const wasCorrect = selected_answer.toUpperCase() === correct_answer.toUpperCase();
     if (wasCorrect) {
       correctCount++;
     }
     totalCount++;
 
-    // Upsert to Supabase
-    const { error } = await supabase.from("mastery").upsert(
+    const { error: masteryError } = await supabase.from("mastery").upsert(
       {
         user_id,
         objective,
@@ -137,8 +153,8 @@ server.tool(
       { onConflict: "user_id,objective" }
     );
 
-    if (error) {
-      console.error("Supabase error:", error);
+    if (masteryError) {
+      console.error("Supabase mastery error:", masteryError);
     }
 
     const masteryEstimate = Math.round((correctCount / totalCount) * 100);
@@ -156,6 +172,7 @@ server.tool(
               was_correct: wasCorrect,
               current_score: `${correctCount}/${totalCount}`,
               mastery_estimate: `${masteryEstimate}%`,
+              logged: !responseError,
             },
             null,
             2
@@ -249,6 +266,167 @@ server.tool(
               user_id,
               objectives,
               message: objectives.length === 0 ? "No mastery data found for this user" : undefined,
+            },
+            null,
+            2
+          ),
+        },
+      ],
+    };
+  }
+);
+
+// Tool 4: mcq_start_session - Start a new learning session
+server.tool(
+  "mcq_start_session",
+  "Start a new learning/assessment session for tracking",
+  {
+    user_id: z.string().describe("The learner's user ID"),
+    metadata: z.record(z.any()).optional().describe("Optional metadata (skill, mode, context)"),
+  },
+  async ({ user_id, metadata }) => {
+    const { data, error } = await supabase
+      .from("sessions")
+      .insert({
+        user_id,
+        metadata: metadata || {},
+      })
+      .select("id, started_at")
+      .single();
+
+    if (error) {
+      console.error("Supabase session error:", error);
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: JSON.stringify({ error: "Failed to create session" }, null, 2),
+          },
+        ],
+      };
+    }
+
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text: JSON.stringify(
+            {
+              session_id: data.id,
+              user_id,
+              started_at: data.started_at,
+              message: "Session started. Use this session_id when recording responses.",
+            },
+            null,
+            2
+          ),
+        },
+      ],
+    };
+  }
+);
+
+// Tool 5: mcq_end_session - End a learning session
+server.tool(
+  "mcq_end_session",
+  "End a learning session and get summary",
+  {
+    session_id: z.string().describe("The session ID to end"),
+  },
+  async ({ session_id }) => {
+    // Update session end time
+    const { error: updateError } = await supabase
+      .from("sessions")
+      .update({ ended_at: new Date().toISOString() })
+      .eq("id", session_id);
+
+    if (updateError) {
+      console.error("Supabase session update error:", updateError);
+    }
+
+    // Get session summary
+    const { data: responses } = await supabase
+      .from("responses")
+      .select("objective, is_correct, response_time_ms")
+      .eq("session_id", session_id);
+
+    const total = responses?.length || 0;
+    const correct = responses?.filter((r) => r.is_correct).length || 0;
+    const avgTime = responses?.length
+      ? Math.round(
+          responses.reduce((sum, r) => sum + (r.response_time_ms || 0), 0) / responses.length
+        )
+      : null;
+
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text: JSON.stringify(
+            {
+              session_id,
+              ended_at: new Date().toISOString(),
+              summary: {
+                total_responses: total,
+                correct,
+                incorrect: total - correct,
+                accuracy: total > 0 ? `${Math.round((correct / total) * 100)}%` : "N/A",
+                avg_response_time_ms: avgTime,
+              },
+            },
+            null,
+            2
+          ),
+        },
+      ],
+    };
+  }
+);
+
+// Tool 6: mcq_get_history - Get response history for a user
+server.tool(
+  "mcq_get_history",
+  "Get detailed response history for a user",
+  {
+    user_id: z.string().describe("The learner's user ID"),
+    limit: z.number().optional().describe("Maximum number of responses to return (default 50)"),
+    objective: z.string().optional().describe("Filter by specific objective"),
+  },
+  async ({ user_id, limit, objective }) => {
+    let query = supabase
+      .from("responses")
+      .select("id, session_id, objective, selected_answer, correct_answer, is_correct, response_time_ms, created_at")
+      .eq("user_id", user_id)
+      .order("created_at", { ascending: false })
+      .limit(limit || 50);
+
+    if (objective) {
+      query = query.eq("objective", objective);
+    }
+
+    const { data: responses, error } = await query;
+
+    if (error) {
+      console.error("Supabase history error:", error);
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: JSON.stringify({ error: "Failed to fetch history" }, null, 2),
+          },
+        ],
+      };
+    }
+
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text: JSON.stringify(
+            {
+              user_id,
+              response_count: responses?.length || 0,
+              responses: responses || [],
             },
             null,
             2
