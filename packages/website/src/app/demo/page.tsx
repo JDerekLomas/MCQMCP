@@ -162,7 +162,7 @@ export default function DemoPage() {
             </p>
             <div className="flex items-center justify-center gap-3">
               <a
-                href="https://github.com/JDerekLomas/claude-mcq-assessment"
+                href="https://github.com/JDerekLomas/MCQMCP"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-claude font-medium rounded-full hover:bg-white/90 transition-all"

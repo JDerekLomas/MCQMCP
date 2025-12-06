@@ -48,7 +48,7 @@ function HeroSection() {
             Try the Demo
           </Link>
           <a
-            href="https://github.com/JDerekLomas/claude-mcq-assessment"
+            href="https://github.com/JDerekLomas/MCQMCP"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-6 py-3 bg-white text-ink-primary font-medium rounded-full border border-edge-default hover:border-ink-tertiary transition-all"
@@ -319,7 +319,7 @@ function ForDevelopersSection() {
             </div>
 
             <a
-              href="https://github.com/JDerekLomas/claude-mcq-assessment#integrating-with-your-clone"
+              href="https://github.com/JDerekLomas/MCQMCP#integrating-with-your-clone"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-claude font-medium hover:underline"
@@ -483,7 +483,7 @@ function ForLearningEngineersSection() {
             </div>
 
             <a
-              href="https://github.com/JDerekLomas/claude-mcq-assessment/blob/main/RESEARCH.md"
+              href="https://github.com/JDerekLomas/MCQMCP/blob/main/docs/RESEARCH.md"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-purple-600 font-medium hover:underline"
@@ -520,7 +520,7 @@ function VisionSection() {
           </blockquote>
           <div className="flex items-center gap-4">
             <a
-              href="https://github.com/JDerekLomas/claude-mcq-assessment/blob/main/VISION.md"
+              href="https://github.com/JDerekLomas/MCQMCP/blob/main/docs/VISION.md"
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-claude font-medium hover:underline"
@@ -528,7 +528,7 @@ function VisionSection() {
               Full vision →
             </a>
             <a
-              href="https://github.com/JDerekLomas/claude-mcq-assessment/blob/main/ROADMAP.md"
+              href="https://github.com/JDerekLomas/MCQMCP/blob/main/docs/ROADMAP.md"
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-ink-secondary hover:text-ink-primary"
@@ -561,7 +561,7 @@ function CTASection() {
             Try the Demo
           </Link>
           <a
-            href="https://github.com/JDerekLomas/claude-mcq-assessment"
+            href="https://github.com/JDerekLomas/MCQMCP"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-6 py-3 bg-transparent text-white font-medium rounded-full border border-white/30 hover:bg-white/10 transition-all"
@@ -588,7 +588,7 @@ function Footer() {
 
         <div className="flex items-center gap-6">
           <a
-            href="https://github.com/JDerekLomas/claude-mcq-assessment"
+            href="https://github.com/JDerekLomas/MCQMCP"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-ink-secondary hover:text-ink-primary transition-colors"
@@ -596,7 +596,7 @@ function Footer() {
             GitHub
           </a>
           <a
-            href="https://github.com/JDerekLomas/claude-mcq-assessment/blob/main/VISION.md"
+            href="https://github.com/JDerekLomas/MCQMCP/blob/main/docs/VISION.md"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-ink-secondary hover:text-ink-primary transition-colors"
@@ -604,7 +604,7 @@ function Footer() {
             Vision
           </a>
           <a
-            href="https://github.com/JDerekLomas/claude-mcq-assessment/blob/main/ROADMAP.md"
+            href="https://github.com/JDerekLomas/MCQMCP/blob/main/docs/ROADMAP.md"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-ink-secondary hover:text-ink-primary transition-colors"
@@ -612,7 +612,7 @@ function Footer() {
             Roadmap
           </a>
           <a
-            href="https://github.com/JDerekLomas/claude-mcq-assessment/blob/main/RESEARCH.md"
+            href="https://github.com/JDerekLomas/MCQMCP/blob/main/docs/RESEARCH.md"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-ink-secondary hover:text-ink-primary transition-colors"

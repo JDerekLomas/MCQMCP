@@ -193,7 +193,7 @@ export function DemoLanding({ onStartDemo, inspectorOpen, onToggleInspector }: D
         {/* Links */}
         <div className="flex justify-center gap-6 mt-12 pt-8 border-t border-edge-light">
           <a
-            href="https://github.com/JDerekLomas/claude-mcq-assessment"
+            href="https://github.com/JDerekLomas/MCQMCP"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-ink-secondary hover:text-ink-primary transition-colors"
@@ -201,7 +201,7 @@ export function DemoLanding({ onStartDemo, inspectorOpen, onToggleInspector }: D
             GitHub →
           </a>
           <a
-            href="https://github.com/JDerekLomas/claude-mcq-assessment/blob/main/VISION.md"
+            href="https://github.com/JDerekLomas/MCQMCP/blob/main/docs/VISION.md"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-ink-secondary hover:text-ink-primary transition-colors"
@@ -209,7 +209,7 @@ export function DemoLanding({ onStartDemo, inspectorOpen, onToggleInspector }: D
             Vision →
           </a>
           <a
-            href="https://github.com/JDerekLomas/claude-mcq-assessment/blob/main/ROADMAP.md"
+            href="https://github.com/JDerekLomas/MCQMCP/blob/main/docs/ROADMAP.md"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-ink-secondary hover:text-ink-primary transition-colors"

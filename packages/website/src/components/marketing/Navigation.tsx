@@ -41,7 +41,7 @@ export function Navigation() {
             For Learning Engineers
           </Link>
           <a
-            href="https://github.com/JDerekLomas/claude-mcq-assessment"
+            href="https://github.com/JDerekLomas/MCQMCP"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-ink-secondary hover:text-ink-primary transition-colors flex items-center gap-1.5"
