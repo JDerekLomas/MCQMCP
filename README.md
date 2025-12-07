@@ -322,3 +322,102 @@ npm run dev:server
 |----------|-------------|
 | `ANTHROPIC_API_KEY` | Claude API key for chat |
 | `POSTGRES_URL` | Vercel Postgres connection string |
+
+## Item Schema v2.0
+
+MCQMCP uses a hybrid schema designed for importing from diverse sources while maintaining queryability.
+
+### Core Fields (required)
+
+```json
+{
+  "id": "js-closures-001",
+  "topic": "js-closures",
+  "difficulty": "medium",
+  "stem": "What will be logged to the console?",
+  "code": "for (var i = 0; i < 3; i++) {\n  setTimeout(() => console.log(i), 0);\n}",
+  "options": [
+    { "id": "A", "text": "0, 1, 2" },
+    { "id": "B", "text": "3, 3, 3" },
+    { "id": "C", "text": "undefined" },
+    { "id": "D", "text": "ReferenceError" }
+  ],
+  "correct": "B",
+  "feedback": {
+    "correct": "Correct! With var, all callbacks share the same i.",
+    "incorrect": "Think about how var scoping works in loops.",
+    "explanation": "var is function-scoped, not block-scoped..."
+  }
+}
+```
+
+### Extended Metadata (optional)
+
+| Object | Purpose | Key Fields |
+|--------|---------|------------|
+| `psychometrics` | Item analysis | difficulty_index, discrimination, IRT params, n_responses |
+| `pedagogy` | Learning design | bloom_level, dok_level, prerequisites, misconceptions |
+| `provenance` | Source tracking | source, license, author, imported_at |
+| `quality` | Review status | status (draft/imported/reviewed/validated), flags |
+| `standards` | Alignment | ccss, ngss, ap, csta arrays |
+| `_raw` | Import overflow | Unmapped fields from source |
+
+### Example with Full Metadata
+
+```json
+{
+  "id": "js-fcc-042",
+  "topic": "js-fundamentals",
+  "difficulty": "medium",
+  "stem": "What does DOM stand for?",
+  "options": [...],
+  "correct": "A",
+  "feedback": {...},
+
+  "psychometrics": {
+    "difficulty_index": 0.72,
+    "discrimination": 0.45,
+    "n_responses": 1250
+  },
+
+  "pedagogy": {
+    "bloom_level": "remember",
+    "misconceptions": ["confuses-dom-with-virtual-dom"]
+  },
+
+  "provenance": {
+    "source": "freecodecamp",
+    "license": "BSD-3-Clause",
+    "imported_at": "2024-12-07"
+  },
+
+  "quality": {
+    "status": "imported"
+  }
+}
+```
+
+See `packages/website/src/lib/mcp/schemas/item.ts` for the full Zod schema.
+
+## Item Sources
+
+| Source | License | Topics |
+|--------|---------|--------|
+| `mcqmcp-original` | CC-BY-4.0 | Programming, AI/LLMs |
+| `freecodecamp` | BSD-3-Clause | JavaScript, React, Python |
+| `openstax` | CC-BY-4.0 | Math, Science |
+| `ck12` | CC-BY-NC | K-12 STEM |
+| `webwork` | GPL | Math (Algebra → Calculus) |
+
+## Topic Taxonomy
+
+Items are organized by category → topic → subtopic:
+
+- **Programming**: js-fundamentals, ts-basics, react-hooks, node-api, git-basics, testing-basics, llm-prompting
+- **Math** (K-12): arithmetic, pre-algebra, algebra-1/2, geometry, precalculus, calculus, statistics
+- **Science** (K-12): biology, chemistry, physics, earth-science, environmental
+- **Medicine**: immunology, anatomy, pathology
+- **Social Studies**: US/world history, civics, economics, geography
+- **Language Arts**: reading, grammar, writing
+
+See `packages/server/src/taxonomy.json` for the complete taxonomy with standards alignment (CCSS, NGSS, AP).

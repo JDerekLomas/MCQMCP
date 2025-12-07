@@ -1,14 +1,52 @@
 {
-  "version": "1.1.0",
+  "version": "2.0.0",
   "metadata": {
     "description": "MCQMCP Item Bank - MCQ items for AI-assisted learning assessment",
+    "schema_version": "2.0.0",
     "default_license": "CC-BY-4.0",
     "sources": {
       "mcqmcp-original": {
         "name": "MCQMCP Original Items",
         "license": "CC-BY-4.0",
-        "url": "https://github.com/JDerekLomas/MCQMCP"
+        "url": "https://github.com/JDerekLomas/MCQMCP",
+        "description": "Original items created for MCQMCP"
+      },
+      "freecodecamp": {
+        "name": "FreeCodeCamp Developer Quiz",
+        "license": "BSD-3-Clause",
+        "url": "https://github.com/freeCodeCamp/Developer_Quiz_Site",
+        "description": "Quiz questions from FreeCodeCamp's Developer Quiz Site"
+      },
+      "openstax": {
+        "name": "OpenStax Textbooks",
+        "license": "CC-BY-4.0",
+        "url": "https://openstax.org",
+        "description": "Open educational resources from OpenStax"
+      },
+      "ck12": {
+        "name": "CK-12 Foundation",
+        "license": "CC-BY-NC",
+        "url": "https://ck12.org",
+        "description": "K-12 STEM content from CK-12 Foundation"
+      },
+      "webwork": {
+        "name": "WeBWorK National Problem Library",
+        "license": "GPL",
+        "url": "https://github.com/openwebwork",
+        "description": "Math problems from the WeBWorK Open Problem Library"
       }
+    },
+    "schema": {
+      "core_fields": ["id", "topic", "difficulty", "stem", "options", "correct", "feedback"],
+      "optional_core": ["code", "tags", "skill_path"],
+      "extended_metadata": {
+        "psychometrics": "Item analysis data (difficulty_index, discrimination, IRT parameters)",
+        "pedagogy": "Learning design (Bloom's level, DOK, prerequisites, misconceptions)",
+        "provenance": "Source tracking (origin, license, attribution)",
+        "quality": "Review status (draft/imported/reviewed/validated/deprecated)",
+        "standards": "Educational standards alignment (CCSS, NGSS, AP, CSTA)"
+      },
+      "overflow_field": "_raw"
     }
   },
   "items": [
