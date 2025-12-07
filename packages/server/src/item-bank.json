@@ -953,6 +953,578 @@
         "incorrect": "Think about the developmental stage and proliferative capacity of these cells.",
         "explanation": "Plasmablasts are an intermediate stage—they're actively dividing cells that secrete antibody but haven't fully committed to the plasma cell program. They retain some B cell markers and proliferative capacity. Mature plasma cells are terminally differentiated, non-dividing, and have completely downregulated B cell markers. Both can secrete antibodies of any isotype and express CD138."
       }
+    },
+    {
+      "id": "ts-basics-001",
+      "topic": "ts-basics",
+      "difficulty": "easy",
+      "stem": "What TypeScript type should you use for a variable that can be either a string or null?",
+      "options": [
+        { "id": "A", "text": "string" },
+        { "id": "B", "text": "string | null" },
+        { "id": "C", "text": "string?" },
+        { "id": "D", "text": "Maybe<string>" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Union types with `|` allow a value to be one of several types.",
+        "incorrect": "TypeScript uses union types to represent values that could be multiple types.",
+        "explanation": "The union type `string | null` means the variable can hold either a string value or null. The `?` syntax is only used for optional properties/parameters (which become `T | undefined`), and `Maybe<T>` is not a built-in TypeScript type."
+      }
+    },
+    {
+      "id": "ts-basics-002",
+      "topic": "ts-basics",
+      "difficulty": "easy",
+      "stem": "What does this TypeScript code output?",
+      "code": "interface User {\n  name: string;\n  age?: number;\n}\n\nconst user: User = { name: 'Alice' };\nconsole.log(user.age);",
+      "options": [
+        { "id": "A", "text": "undefined" },
+        { "id": "B", "text": "null" },
+        { "id": "C", "text": "TypeError: age is not defined" },
+        { "id": "D", "text": "Compilation error: age is required" }
+      ],
+      "correct": "A",
+      "feedback": {
+        "correct": "Correct! Optional properties (with ?) are undefined when not provided.",
+        "incorrect": "The `?` makes a property optional—what value does an unset property have?",
+        "explanation": "The `?` in `age?: number` makes the property optional. When a property isn't provided, accessing it returns `undefined`. This compiles fine because TypeScript knows `age` is `number | undefined`. At runtime, JavaScript returns `undefined` for missing properties."
+      }
+    },
+    {
+      "id": "ts-basics-003",
+      "topic": "ts-basics",
+      "difficulty": "medium",
+      "stem": "What's the TypeScript error in this code?",
+      "code": "function greet(name: string): string {\n  if (name) {\n    return `Hello, ${name}!`;\n  }\n}",
+      "options": [
+        { "id": "A", "text": "No error—this compiles fine" },
+        { "id": "B", "text": "Function lacks ending return statement and return type does not include 'undefined'" },
+        { "id": "C", "text": "Cannot use template literals in TypeScript" },
+        { "id": "D", "text": "The if condition is invalid" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Not all code paths return a value, but the return type promises `string`.",
+        "incorrect": "What happens if `name` is an empty string?",
+        "explanation": "If `name` is falsy (empty string), the function returns `undefined` implicitly. But the return type is `string`, not `string | undefined`. TypeScript catches this: 'Function lacks ending return statement and return type does not include undefined.' Fix: add `return ''` at the end, or change return type to `string | undefined`."
+      }
+    },
+    {
+      "id": "ts-generics-001",
+      "topic": "ts-generics",
+      "difficulty": "medium",
+      "stem": "What type does `result` have?",
+      "code": "function identity<T>(arg: T): T {\n  return arg;\n}\n\nconst result = identity('hello');",
+      "options": [
+        { "id": "A", "text": "T" },
+        { "id": "B", "text": "string" },
+        { "id": "C", "text": "any" },
+        { "id": "D", "text": "unknown" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! TypeScript infers the generic type from the argument.",
+        "incorrect": "Generics are resolved at compile time based on usage.",
+        "explanation": "When you call `identity('hello')`, TypeScript infers that `T` is `string` because the argument is a string. So the return type is also `string`. You could explicitly write `identity<string>('hello')`, but TypeScript's inference handles it automatically."
+      }
+    },
+    {
+      "id": "ts-generics-002",
+      "topic": "ts-generics",
+      "difficulty": "hard",
+      "stem": "What does this utility type do?",
+      "code": "type Readonly<T> = {\n  readonly [P in keyof T]: T[P];\n};",
+      "options": [
+        { "id": "A", "text": "Makes all properties of T optional" },
+        { "id": "B", "text": "Makes all properties of T immutable (read-only)" },
+        { "id": "C", "text": "Extracts only the string keys from T" },
+        { "id": "D", "text": "Creates a union of all property types in T" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! This mapped type adds `readonly` to every property of T.",
+        "incorrect": "Look at what modifier is being applied to each property.",
+        "explanation": "`[P in keyof T]` iterates over all keys of T. For each key P, we create a property with the same name and type (`T[P]`), but add `readonly`. This is actually a built-in TypeScript utility type. `Readonly<{name: string}>` becomes `{readonly name: string}`."
+      }
+    },
+    {
+      "id": "ts-generics-003",
+      "topic": "ts-generics",
+      "difficulty": "hard",
+      "stem": "What's the inferred type of `value`?",
+      "code": "function getValue<T, K extends keyof T>(obj: T, key: K): T[K] {\n  return obj[key];\n}\n\nconst user = { name: 'Alice', age: 30 };\nconst value = getValue(user, 'age');",
+      "options": [
+        { "id": "A", "text": "string | number" },
+        { "id": "B", "text": "number" },
+        { "id": "C", "text": "any" },
+        { "id": "D", "text": "'age'" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! TypeScript knows that `user['age']` is specifically a number.",
+        "incorrect": "The generic constraint `K extends keyof T` enables precise type inference.",
+        "explanation": "This is the type-safe way to access object properties. `K extends keyof T` means K must be a key of T. When called with `'age'`, K is the literal type `'age'`, and `T[K]` (which is `typeof user['age']`) is `number`. This pattern is used in libraries like lodash's `get` function."
+      }
+    },
+    {
+      "id": "css-tailwind-001",
+      "topic": "css-tailwind",
+      "difficulty": "easy",
+      "stem": "In Tailwind CSS, what does the class `flex items-center justify-between` create?",
+      "options": [
+        { "id": "A", "text": "A grid with centered items" },
+        { "id": "B", "text": "A flexbox with vertically centered items spread horizontally" },
+        { "id": "C", "text": "A block element with text alignment" },
+        { "id": "D", "text": "An inline element with padding" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! `flex` enables flexbox, `items-center` centers vertically, `justify-between` spreads items horizontally.",
+        "incorrect": "Break down each class: flex, items-center, justify-between.",
+        "explanation": "`flex` sets `display: flex`. `items-center` sets `align-items: center` (vertical centering in row direction). `justify-between` sets `justify-content: space-between` (first item at start, last at end, equal space between). This is a common pattern for headers and navbars."
+      }
+    },
+    {
+      "id": "css-tailwind-002",
+      "topic": "css-tailwind",
+      "difficulty": "medium",
+      "stem": "What does `hover:bg-blue-500` do in Tailwind CSS?",
+      "options": [
+        { "id": "A", "text": "Always applies a blue background" },
+        { "id": "B", "text": "Applies blue background only on hover state" },
+        { "id": "C", "text": "Creates a hover animation to blue" },
+        { "id": "D", "text": "Sets the hover cursor to a blue pointer" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! The `hover:` prefix applies styles only when the element is hovered.",
+        "incorrect": "Tailwind uses prefixes like `hover:` to apply styles conditionally.",
+        "explanation": "Tailwind's state variants use prefixes. `hover:bg-blue-500` compiles to `.hover\\:bg-blue-500:hover { background-color: #3b82f6 }`. Other variants include `focus:`, `active:`, `disabled:`, `dark:` for dark mode, and responsive prefixes like `md:` and `lg:`."
+      }
+    },
+    {
+      "id": "css-tailwind-003",
+      "topic": "css-tailwind",
+      "difficulty": "medium",
+      "stem": "What's the correct Tailwind class for responsive design that applies only on medium screens and up?",
+      "options": [
+        { "id": "A", "text": "@medium:hidden" },
+        { "id": "B", "text": "md:hidden" },
+        { "id": "C", "text": "medium-hidden" },
+        { "id": "D", "text": "screen-md:hidden" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! `md:` prefix applies styles at the medium breakpoint (768px) and above.",
+        "incorrect": "Tailwind uses short prefixes for responsive breakpoints.",
+        "explanation": "Tailwind's responsive prefixes are mobile-first: `sm:` (640px+), `md:` (768px+), `lg:` (1024px+), `xl:` (1280px+), `2xl:` (1536px+). `md:hidden` means 'hidden on medium screens and larger' while visible on smaller screens."
+      }
+    },
+    {
+      "id": "css-layout-001",
+      "topic": "css-layout",
+      "difficulty": "easy",
+      "stem": "What CSS property creates a grid container?",
+      "options": [
+        { "id": "A", "text": "display: grid-container" },
+        { "id": "B", "text": "display: grid" },
+        { "id": "C", "text": "grid: true" },
+        { "id": "D", "text": "layout: grid" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! `display: grid` turns an element into a grid container.",
+        "incorrect": "Grid layout is enabled through the display property.",
+        "explanation": "`display: grid` creates a block-level grid container. Its children become grid items. You then define the grid structure with properties like `grid-template-columns`, `grid-template-rows`, and `gap`. There's also `display: inline-grid` for inline-level grid containers."
+      }
+    },
+    {
+      "id": "css-layout-002",
+      "topic": "css-layout",
+      "difficulty": "medium",
+      "stem": "What does `grid-template-columns: repeat(3, 1fr)` create?",
+      "options": [
+        { "id": "A", "text": "3 columns of 1 pixel each" },
+        { "id": "B", "text": "3 equal-width columns sharing available space" },
+        { "id": "C", "text": "1 column repeated 3 times vertically" },
+        { "id": "D", "text": "3 columns of 100% width each" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! `repeat(3, 1fr)` creates 3 columns, each taking 1 fraction of available space.",
+        "incorrect": "The `fr` unit represents a fraction of the available space.",
+        "explanation": "`repeat(3, 1fr)` is shorthand for `1fr 1fr 1fr`. The `fr` unit distributes available space proportionally. Three `1fr` columns each get 1/3 of the container width. You could do `1fr 2fr 1fr` for a wider middle column. This is more flexible than percentages because it accounts for gaps."
+      }
+    },
+    {
+      "id": "css-layout-003",
+      "topic": "css-layout",
+      "difficulty": "hard",
+      "stem": "Why might `position: sticky` not work as expected?",
+      "options": [
+        { "id": "A", "text": "It's not supported in modern browsers" },
+        { "id": "B", "text": "A parent element has `overflow: hidden` or `overflow: auto`" },
+        { "id": "C", "text": "The element needs `display: block`" },
+        { "id": "D", "text": "Sticky only works on table headers" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Sticky positioning fails when any ancestor has an overflow value other than `visible`.",
+        "incorrect": "There's a common CSS property on parent elements that breaks sticky.",
+        "explanation": "A sticky element is positioned relative to its nearest scrolling ancestor. If a parent has `overflow: hidden`, `auto`, or `scroll`, the sticky element sticks to that container instead of the viewport—and if that container doesn't scroll, sticky appears broken. This is the most common 'sticky not working' issue."
+      }
+    },
+    {
+      "id": "node-api-001",
+      "topic": "node-api",
+      "difficulty": "easy",
+      "stem": "In Express.js, how do you send a JSON response?",
+      "code": "app.get('/api/user', (req, res) => {\n  const user = { name: 'Alice' };\n  // How to send user as JSON?\n});",
+      "options": [
+        { "id": "A", "text": "res.send(JSON.stringify(user))" },
+        { "id": "B", "text": "res.json(user)" },
+        { "id": "C", "text": "res.write(user)" },
+        { "id": "D", "text": "return user" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! `res.json()` serializes the object and sets the Content-Type header.",
+        "incorrect": "Express has a dedicated method for JSON responses.",
+        "explanation": "`res.json(user)` automatically stringifies the object, sets `Content-Type: application/json`, and sends the response. While `res.send(JSON.stringify(user))` works, `res.json()` is cleaner and handles edge cases like circular references better."
+      }
+    },
+    {
+      "id": "node-api-002",
+      "topic": "node-api",
+      "difficulty": "medium",
+      "stem": "What's the purpose of middleware in Express?",
+      "code": "app.use((req, res, next) => {\n  console.log('Request received');\n  next();\n});",
+      "options": [
+        { "id": "A", "text": "To define database schemas" },
+        { "id": "B", "text": "To process requests before they reach route handlers" },
+        { "id": "C", "text": "To compile TypeScript to JavaScript" },
+        { "id": "D", "text": "To serve static HTML files" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Middleware functions execute in order before (or instead of) route handlers.",
+        "incorrect": "Middleware sits between the incoming request and your route handlers.",
+        "explanation": "Middleware functions have access to `req`, `res`, and `next`. They can modify the request/response, end the request cycle, or call `next()` to pass control to the next middleware. Common uses: logging, authentication, parsing request bodies, CORS headers, error handling."
+      }
+    },
+    {
+      "id": "node-api-003",
+      "topic": "node-api",
+      "difficulty": "medium",
+      "stem": "What HTTP status code should you return for a successful POST that creates a resource?",
+      "options": [
+        { "id": "A", "text": "200 OK" },
+        { "id": "B", "text": "201 Created" },
+        { "id": "C", "text": "204 No Content" },
+        { "id": "D", "text": "301 Moved Permanently" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! 201 Created indicates a new resource was successfully created.",
+        "incorrect": "Different success codes have specific semantic meanings.",
+        "explanation": "201 Created is the appropriate response when a POST/PUT creates a new resource. 200 OK is for successful requests that don't create resources. 204 No Content is for success with no response body (like DELETE). Following HTTP semantics helps clients understand what happened."
+      }
+    },
+    {
+      "id": "node-async-001",
+      "topic": "node-async",
+      "difficulty": "hard",
+      "stem": "What's wrong with this error handling?",
+      "code": "app.get('/users', async (req, res) => {\n  const users = await db.getUsers();\n  res.json(users);\n});",
+      "options": [
+        { "id": "A", "text": "Nothing—async/await handles errors automatically" },
+        { "id": "B", "text": "Unhandled promise rejection if db.getUsers() throws—Express won't catch async errors" },
+        { "id": "C", "text": "Should use callbacks instead of async/await" },
+        { "id": "D", "text": "res.json() can't be used with await" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Express 4.x doesn't catch errors from async route handlers automatically.",
+        "incorrect": "Async/await changes how errors propagate in Express.",
+        "explanation": "In Express 4.x, if an async route handler throws, it becomes an unhandled promise rejection—Express's error handler won't catch it. Fix: wrap in try/catch and call `next(error)`, use a wrapper function, or upgrade to Express 5.x which handles async errors. Libraries like `express-async-handler` help."
+      }
+    },
+    {
+      "id": "node-async-002",
+      "topic": "node-async",
+      "difficulty": "hard",
+      "stem": "What's the benefit of using `Promise.all()` here instead of sequential awaits?",
+      "code": "// Sequential\nconst users = await getUsers();\nconst posts = await getPosts();\nconst comments = await getComments();\n\n// Parallel\nconst [users, posts, comments] = await Promise.all([\n  getUsers(),\n  getPosts(),\n  getComments()\n]);",
+      "options": [
+        { "id": "A", "text": "No benefit—they're equivalent" },
+        { "id": "B", "text": "Promise.all() runs all three concurrently, reducing total wait time" },
+        { "id": "C", "text": "Promise.all() uses less memory" },
+        { "id": "D", "text": "Promise.all() provides better error messages" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Independent async operations should run in parallel to minimize latency.",
+        "incorrect": "Think about whether each operation depends on the previous one's result.",
+        "explanation": "Sequential awaits wait for each promise before starting the next. If each takes 100ms, total time is 300ms. `Promise.all()` starts all three immediately—they run concurrently, so total time is ~100ms (the slowest one). Use this when operations are independent. Use sequential awaits when each depends on the previous result."
+      }
+    },
+    {
+      "id": "git-basics-001",
+      "topic": "git-basics",
+      "difficulty": "easy",
+      "stem": "What does `git status` show?",
+      "options": [
+        { "id": "A", "text": "The commit history" },
+        { "id": "B", "text": "Staged, unstaged, and untracked files" },
+        { "id": "C", "text": "Remote repository URLs" },
+        { "id": "D", "text": "Branch merge conflicts" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! `git status` shows the state of your working directory and staging area.",
+        "incorrect": "`git status` is for checking what's changed, not history.",
+        "explanation": "`git status` shows: staged changes (ready to commit), unstaged changes (modified but not staged), untracked files (new files Git doesn't know about), and your current branch. It's the most common command for understanding your current state before committing."
+      }
+    },
+    {
+      "id": "git-basics-002",
+      "topic": "git-basics",
+      "difficulty": "easy",
+      "stem": "What's the difference between `git pull` and `git fetch`?",
+      "options": [
+        { "id": "A", "text": "They're the same command" },
+        { "id": "B", "text": "`fetch` downloads changes, `pull` downloads AND merges them" },
+        { "id": "C", "text": "`pull` is for branches, `fetch` is for tags" },
+        { "id": "D", "text": "`fetch` is faster because it skips validation" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! `fetch` is safe—it downloads without modifying your working directory. `pull` = fetch + merge.",
+        "incorrect": "One of these commands modifies your working directory, the other doesn't.",
+        "explanation": "`git fetch` downloads commits, branches, and tags from remote but doesn't change your working directory. You can review changes before merging. `git pull` does `fetch` + `merge` (or `rebase` with `--rebase`), automatically integrating remote changes. `fetch` is safer; `pull` is more convenient."
+      }
+    },
+    {
+      "id": "git-branching-001",
+      "topic": "git-branching",
+      "difficulty": "medium",
+      "stem": "You want to incorporate main branch updates into your feature branch. What's the cleanest approach?",
+      "options": [
+        { "id": "A", "text": "Delete feature branch and start over" },
+        { "id": "B", "text": "`git rebase main` from your feature branch" },
+        { "id": "C", "text": "`git push --force` to overwrite" },
+        { "id": "D", "text": "Copy-paste the changes manually" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Rebasing replays your commits on top of main, creating a linear history.",
+        "incorrect": "There's a Git command designed for incorporating upstream changes into a branch.",
+        "explanation": "`git rebase main` (from your feature branch) takes your commits, temporarily removes them, updates to latest main, then replays your commits on top. This creates a clean, linear history. Alternative: `git merge main` creates a merge commit but preserves the branching history. Rebase for clean history; merge for accurate history."
+      }
+    },
+    {
+      "id": "git-branching-002",
+      "topic": "git-branching",
+      "difficulty": "hard",
+      "stem": "You accidentally committed to main instead of a feature branch. How do you fix this?",
+      "code": "# Current state: You're on main with an unwanted commit\n# Goal: Move the commit to a new feature branch",
+      "options": [
+        { "id": "A", "text": "`git reset --hard` to delete the commit permanently" },
+        { "id": "B", "text": "Create branch from current state, then reset main: `git branch feature && git reset --hard HEAD~1`" },
+        { "id": "C", "text": "`git revert HEAD` and commit again on the right branch" },
+        { "id": "D", "text": "This can't be fixed—you must force push" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Create a branch to save the commit, then reset main to before the commit.",
+        "incorrect": "You need to preserve the commit while removing it from main.",
+        "explanation": "1) `git branch feature` creates a new branch pointing at current HEAD (including your commit). 2) `git reset --hard HEAD~1` moves main back one commit. Now `feature` has the commit and `main` is clean. Note: Only do this if you haven't pushed to remote. If pushed, use `revert` instead."
+      }
+    },
+    {
+      "id": "testing-basics-001",
+      "topic": "testing-basics",
+      "difficulty": "easy",
+      "stem": "What type of test is this?",
+      "code": "test('adds 1 + 2 to equal 3', () => {\n  expect(add(1, 2)).toBe(3);\n});",
+      "options": [
+        { "id": "A", "text": "Integration test" },
+        { "id": "B", "text": "End-to-end test" },
+        { "id": "C", "text": "Unit test" },
+        { "id": "D", "text": "Smoke test" }
+      ],
+      "correct": "C",
+      "feedback": {
+        "correct": "Correct! Unit tests test individual functions or components in isolation.",
+        "incorrect": "Consider the scope: what is being tested and how much of the system is involved?",
+        "explanation": "Unit tests test a single 'unit' (function, method, component) in isolation, with no external dependencies. They're fast and specific. Integration tests test how units work together. E2E tests test the full application flow. This test checks one function with one input—classic unit test."
+      }
+    },
+    {
+      "id": "testing-basics-002",
+      "topic": "testing-basics",
+      "difficulty": "medium",
+      "stem": "What's wrong with this test?",
+      "code": "test('user signup works', async () => {\n  const user = await createUser('test@example.com');\n  expect(user.id).toBeDefined();\n  // Test ends here—user remains in database\n});",
+      "options": [
+        { "id": "A", "text": "Should use `it()` instead of `test()`" },
+        { "id": "B", "text": "Missing cleanup—test data pollutes the database for other tests" },
+        { "id": "C", "text": "async/await isn't supported in tests" },
+        { "id": "D", "text": "toBeDefined() is not a valid matcher" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Tests should clean up after themselves to avoid affecting other tests.",
+        "incorrect": "Consider what happens when you run this test multiple times or with other tests.",
+        "explanation": "Tests should be isolated and repeatable. This test creates a user but never deletes it. Running tests multiple times accumulates data; tests may fail due to duplicate emails or hit row limits. Fix: use `afterEach` to clean up, use transactions that rollback, or use test databases that reset between runs."
+      }
+    },
+    {
+      "id": "testing-react-001",
+      "topic": "testing-react",
+      "difficulty": "medium",
+      "stem": "What's the best way to query an element in React Testing Library?",
+      "code": "<button data-testid=\"submit-btn\" className=\"btn-primary\">\n  Submit Form\n</button>",
+      "options": [
+        { "id": "A", "text": "getByClassName('btn-primary')" },
+        { "id": "B", "text": "getByRole('button', { name: /submit form/i })" },
+        { "id": "C", "text": "document.querySelector('.btn-primary')" },
+        { "id": "D", "text": "getByTestId('submit-btn') is always best" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! `getByRole` queries the accessibility tree, testing what users actually experience.",
+        "incorrect": "React Testing Library prioritizes queries that reflect how users interact with your app.",
+        "explanation": "RTL's query priority: getByRole > getByLabelText > getByPlaceholderText > getByText > getByDisplayValue > getByAltText > getByTitle > getByTestId. `getByRole` is preferred because it tests accessibility—if the query fails, your component may have accessibility issues. `data-testid` is a last resort."
+      }
+    },
+    {
+      "id": "testing-react-002",
+      "topic": "testing-react",
+      "difficulty": "hard",
+      "stem": "Why is this test flaky?",
+      "code": "test('shows loading then data', async () => {\n  render(<UserProfile userId=\"1\" />);\n  \n  expect(screen.getByText('Loading...')).toBeInTheDocument();\n  expect(screen.getByText('Alice')).toBeInTheDocument();\n});",
+      "options": [
+        { "id": "A", "text": "Can't have two expects in one test" },
+        { "id": "B", "text": "Not waiting for async state update—'Alice' might not be rendered yet" },
+        { "id": "C", "text": "Should use `findByText` instead of `getByText` for both" },
+        { "id": "D", "text": "render() is synchronous so this always works" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! `getByText` is synchronous and will fail if the element isn't immediately present.",
+        "incorrect": "Consider the timing: when does 'Alice' appear in the DOM?",
+        "explanation": "The component fetches data and shows 'Loading...' first, then 'Alice'. `getByText('Alice')` runs immediately after render, before the fetch completes—it fails. Fix: `await screen.findByText('Alice')` which waits up to 1 second for the element. Or use `waitFor()`. `findBy*` = `waitFor` + `getBy*`."
+      }
+    },
+    {
+      "id": "llm-prompting-001",
+      "topic": "llm-prompting",
+      "difficulty": "easy",
+      "stem": "What is 'few-shot prompting'?",
+      "options": [
+        { "id": "A", "text": "Asking the LLM to respond in few words" },
+        { "id": "B", "text": "Providing examples in the prompt to guide the model's output format" },
+        { "id": "C", "text": "Making multiple API calls with short prompts" },
+        { "id": "D", "text": "Limiting the number of tokens in the response" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Few-shot prompting includes examples to demonstrate the desired output pattern.",
+        "incorrect": "'Few-shot' refers to the number of examples provided.",
+        "explanation": "Few-shot prompting gives the model examples of input-output pairs before the actual task. 'Zero-shot' = no examples, 'one-shot' = one example, 'few-shot' = several examples. Examples help the model understand format, style, and reasoning pattern you want. It's one of the most effective prompting techniques."
+      }
+    },
+    {
+      "id": "llm-prompting-002",
+      "topic": "llm-prompting",
+      "difficulty": "medium",
+      "stem": "What's the purpose of adding 'Think step by step' to a prompt?",
+      "options": [
+        { "id": "A", "text": "Makes responses shorter" },
+        { "id": "B", "text": "Triggers chain-of-thought reasoning for better accuracy on complex tasks" },
+        { "id": "C", "text": "Reduces API costs" },
+        { "id": "D", "text": "Enables streaming responses" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Chain-of-thought prompting improves reasoning by encouraging explicit intermediate steps.",
+        "incorrect": "This phrase triggers a specific behavior in how LLMs process complex problems.",
+        "explanation": "Chain-of-thought (CoT) prompting asks the model to show its reasoning. For math, logic, or multi-step problems, this significantly improves accuracy. The model is less likely to skip steps or make reasoning errors when it 'thinks aloud.' The phrase 'Let's think step by step' or 'Think through this carefully' triggers this behavior."
+      }
+    },
+    {
+      "id": "llm-prompting-003",
+      "topic": "llm-prompting",
+      "difficulty": "hard",
+      "stem": "What's a 'system prompt' and why is it important?",
+      "options": [
+        { "id": "A", "text": "A prompt that only system administrators can see" },
+        { "id": "B", "text": "Instructions that set the model's persona, constraints, and behavior across the conversation" },
+        { "id": "C", "text": "Error messages from the API" },
+        { "id": "D", "text": "The default response when no user input is provided" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! System prompts configure the model's behavior, persona, and constraints for the entire conversation.",
+        "incorrect": "The system prompt is separate from user messages and has special significance.",
+        "explanation": "System prompts set the context: 'You are a helpful coding assistant. Never provide harmful code. Always explain your reasoning.' They persist across the conversation and have higher weight than user messages. Good system prompts define: persona, capabilities, limitations, output format, and safety constraints. They're crucial for building reliable AI applications."
+      }
+    },
+    {
+      "id": "llm-tools-001",
+      "topic": "llm-tools",
+      "difficulty": "medium",
+      "stem": "What is 'function calling' (tool use) in LLM APIs?",
+      "options": [
+        { "id": "A", "text": "The LLM executing JavaScript functions" },
+        { "id": "B", "text": "The LLM generating structured output that indicates which function to call with what arguments" },
+        { "id": "C", "text": "Calling the LLM API from a function" },
+        { "id": "D", "text": "Using callbacks for async LLM responses" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! Function calling lets the LLM request that you execute functions and return results.",
+        "incorrect": "The LLM doesn't execute functions—it requests that you do.",
+        "explanation": "Function calling enables LLMs to interact with external systems. You define available functions (name, description, parameters). The model outputs structured JSON indicating which function to call. YOU execute the function and return results to the model. This enables: API calls, database queries, calculations, web searches—anything you implement."
+      }
+    },
+    {
+      "id": "llm-tools-002",
+      "topic": "llm-tools",
+      "difficulty": "hard",
+      "stem": "What is RAG (Retrieval-Augmented Generation)?",
+      "options": [
+        { "id": "A", "text": "A technique for generating random responses" },
+        { "id": "B", "text": "Retrieving relevant documents and including them in the prompt to ground responses in specific knowledge" },
+        { "id": "C", "text": "A model architecture that replaces transformers" },
+        { "id": "D", "text": "Automatically generating training data" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! RAG combines retrieval systems with generation to provide accurate, sourced responses.",
+        "incorrect": "RAG addresses a key limitation of LLMs: their knowledge cutoff date.",
+        "explanation": "RAG solves the 'knowledge cutoff' problem. Instead of relying only on training data: 1) User asks a question, 2) System retrieves relevant documents (from vector DB, search, etc.), 3) Retrieved context is added to the prompt, 4) LLM generates a response grounded in that context. This enables: up-to-date info, private data access, and cited sources."
+      }
+    },
+    {
+      "id": "llm-tools-003",
+      "topic": "llm-tools",
+      "difficulty": "hard",
+      "stem": "What is the Model Context Protocol (MCP)?",
+      "options": [
+        { "id": "A", "text": "A compression format for reducing model size" },
+        { "id": "B", "text": "An open protocol for connecting LLMs to external data sources and tools" },
+        { "id": "C", "text": "A security protocol for encrypting prompts" },
+        { "id": "D", "text": "A benchmark for evaluating model performance" }
+      ],
+      "correct": "B",
+      "feedback": {
+        "correct": "Correct! MCP standardizes how AI applications connect to data sources, tools, and services.",
+        "incorrect": "MCP is about connecting LLMs to external capabilities.",
+        "explanation": "MCP (Model Context Protocol) is an open standard for connecting AI assistants to external systems. It defines how to expose: resources (data the model can read), tools (functions the model can call), and prompts (reusable templates). MCP servers provide these capabilities; MCP clients (like Claude) consume them. It's like an API standard for AI integrations."
+      }
     }
   ]
 }
