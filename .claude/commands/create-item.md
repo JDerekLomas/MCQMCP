@@ -49,9 +49,17 @@ Generate a valid JSON item matching this schema:
     "correct": "Feedback when learner answers correctly",
     "incorrect": "Hint for learner who answered incorrectly",
     "explanation": "Detailed explanation of the concept being tested"
-  }
+  },
+  "source": "mcqmcp-original",
+  "tags": ["optional", "additional", "tags"]
 }
 ```
+
+## Source Attribution
+
+Items must include a `source` field referencing the source registry in the item bank metadata:
+- `mcqmcp-original`: Original items created for MCQMCP (CC-BY-4.0)
+- Add new sources to the metadata.sources object when importing from external banks
 
 ## Process
 
