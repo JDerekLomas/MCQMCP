@@ -1,0 +1,233 @@
+{
+  "version": "1.0.0",
+  "description": "MCQMCP Topic Taxonomy - Hierarchical organization of assessment topics",
+  "categories": {
+    "programming": {
+      "name": "Programming & Computer Science",
+      "icon": "code",
+      "topics": {
+        "js-fundamentals": {
+          "name": "JavaScript Fundamentals",
+          "subtopics": ["js-this", "js-closures", "js-async", "js-prototypes", "js-timers", "js-patterns"]
+        },
+        "ts-fundamentals": {
+          "name": "TypeScript",
+          "subtopics": ["ts-basics", "ts-generics", "ts-advanced"]
+        },
+        "react-fundamentals": {
+          "name": "React",
+          "subtopics": ["react-hooks", "react-state", "react-rendering", "react-patterns"]
+        },
+        "web-fundamentals": {
+          "name": "Web Development",
+          "subtopics": ["html-events", "css-tailwind", "css-layout", "accessibility"]
+        },
+        "node-fundamentals": {
+          "name": "Node.js & APIs",
+          "subtopics": ["node-api", "node-async", "node-express", "rest-api"]
+        },
+        "cs-fundamentals": {
+          "name": "CS Fundamentals",
+          "subtopics": ["algorithms", "data-structures", "complexity", "recursion"]
+        },
+        "git-fundamentals": {
+          "name": "Git & Version Control",
+          "subtopics": ["git-basics", "git-branching", "git-collaboration"]
+        },
+        "testing-fundamentals": {
+          "name": "Testing",
+          "subtopics": ["testing-basics", "testing-react", "testing-integration", "tdd"]
+        },
+        "ai-fundamentals": {
+          "name": "AI & LLMs",
+          "subtopics": ["llm-prompting", "llm-tools", "vibe-prompting", "vibe-review", "vibe-workflow"]
+        }
+      }
+    },
+    "math": {
+      "name": "Mathematics",
+      "icon": "calculator",
+      "grade_levels": ["elementary", "middle-school", "high-school", "college"],
+      "topics": {
+        "math-arithmetic": {
+          "name": "Arithmetic",
+          "grade": "elementary",
+          "subtopics": ["addition", "subtraction", "multiplication", "division", "fractions", "decimals"]
+        },
+        "math-pre-algebra": {
+          "name": "Pre-Algebra",
+          "grade": "middle-school",
+          "subtopics": ["integers", "ratios", "proportions", "percents", "expressions"]
+        },
+        "math-algebra-1": {
+          "name": "Algebra 1",
+          "grade": "high-school",
+          "subtopics": ["linear-equations", "inequalities", "systems", "polynomials", "factoring"],
+          "standards": ["CCSS.MATH.CONTENT.HSA"]
+        },
+        "math-geometry": {
+          "name": "Geometry",
+          "grade": "high-school",
+          "subtopics": ["triangles", "circles", "proofs", "transformations", "trigonometry"],
+          "standards": ["CCSS.MATH.CONTENT.HSG"]
+        },
+        "math-algebra-2": {
+          "name": "Algebra 2",
+          "grade": "high-school",
+          "subtopics": ["quadratics", "exponentials", "logarithms", "rational-functions", "complex-numbers"],
+          "standards": ["CCSS.MATH.CONTENT.HSA", "CCSS.MATH.CONTENT.HSF"]
+        },
+        "math-precalculus": {
+          "name": "Precalculus",
+          "grade": "high-school",
+          "subtopics": ["functions", "trig-identities", "sequences-series", "limits-intro", "vectors"]
+        },
+        "math-calculus": {
+          "name": "Calculus",
+          "grade": "high-school",
+          "subtopics": ["limits", "derivatives", "integrals", "applications", "differential-equations"],
+          "standards": ["AP-Calculus-AB", "AP-Calculus-BC"]
+        },
+        "math-statistics": {
+          "name": "Statistics & Probability",
+          "grade": "high-school",
+          "subtopics": ["probability", "distributions", "inference", "regression", "experimental-design"],
+          "standards": ["AP-Statistics"]
+        }
+      }
+    },
+    "science": {
+      "name": "Science",
+      "icon": "flask",
+      "grade_levels": ["elementary", "middle-school", "high-school", "college"],
+      "topics": {
+        "science-biology": {
+          "name": "Biology",
+          "grade": "high-school",
+          "subtopics": ["cells", "genetics", "evolution", "ecology", "human-body", "molecular-biology"],
+          "standards": ["NGSS.HS-LS", "AP-Biology"]
+        },
+        "science-chemistry": {
+          "name": "Chemistry",
+          "grade": "high-school",
+          "subtopics": ["atomic-structure", "bonding", "reactions", "stoichiometry", "thermodynamics", "organic"],
+          "standards": ["NGSS.HS-PS1", "AP-Chemistry"]
+        },
+        "science-physics": {
+          "name": "Physics",
+          "grade": "high-school",
+          "subtopics": ["mechanics", "energy", "waves", "electricity", "magnetism", "modern-physics"],
+          "standards": ["NGSS.HS-PS2", "NGSS.HS-PS3", "AP-Physics"]
+        },
+        "science-earth": {
+          "name": "Earth Science",
+          "grade": "high-school",
+          "subtopics": ["geology", "weather", "climate", "astronomy", "oceanography"],
+          "standards": ["NGSS.HS-ESS"]
+        },
+        "science-environmental": {
+          "name": "Environmental Science",
+          "grade": "high-school",
+          "subtopics": ["ecosystems", "biodiversity", "pollution", "sustainability", "climate-change"],
+          "standards": ["AP-Environmental-Science"]
+        }
+      }
+    },
+    "medicine": {
+      "name": "Medicine & Health Sciences",
+      "icon": "heart-pulse",
+      "topics": {
+        "med-immunology": {
+          "name": "Immunology",
+          "subtopics": ["plasma-cells", "antibodies", "t-cells", "immune-response", "autoimmunity"]
+        },
+        "med-anatomy": {
+          "name": "Anatomy & Physiology",
+          "subtopics": ["cardiovascular", "respiratory", "nervous", "musculoskeletal", "endocrine"]
+        },
+        "med-pathology": {
+          "name": "Pathology",
+          "subtopics": ["cell-injury", "inflammation", "neoplasia", "hemodynamics"]
+        }
+      }
+    },
+    "social-studies": {
+      "name": "Social Studies",
+      "icon": "globe",
+      "topics": {
+        "history-us": {
+          "name": "US History",
+          "subtopics": ["colonial", "revolution", "civil-war", "modern"]
+        },
+        "history-world": {
+          "name": "World History",
+          "subtopics": ["ancient", "medieval", "modern", "contemporary"]
+        },
+        "civics": {
+          "name": "Civics & Government",
+          "subtopics": ["constitution", "branches", "elections", "rights"]
+        },
+        "economics": {
+          "name": "Economics",
+          "subtopics": ["microeconomics", "macroeconomics", "markets", "policy"]
+        },
+        "geography": {
+          "name": "Geography",
+          "subtopics": ["physical", "human", "regions", "mapping"]
+        }
+      }
+    },
+    "language-arts": {
+      "name": "Language Arts",
+      "icon": "book-open",
+      "topics": {
+        "reading-comprehension": {
+          "name": "Reading Comprehension",
+          "subtopics": ["main-idea", "inference", "vocabulary", "analysis"]
+        },
+        "grammar": {
+          "name": "Grammar & Usage",
+          "subtopics": ["parts-of-speech", "sentence-structure", "punctuation", "style"]
+        },
+        "writing": {
+          "name": "Writing",
+          "subtopics": ["essay-structure", "argumentation", "narrative", "research"]
+        }
+      }
+    }
+  },
+  "difficulty_levels": {
+    "easy": {
+      "description": "Recall and recognition",
+      "bloom_level": ["remember", "understand"],
+      "typical_accuracy": "70-90%"
+    },
+    "medium": {
+      "description": "Application and analysis",
+      "bloom_level": ["apply", "analyze"],
+      "typical_accuracy": "50-70%"
+    },
+    "hard": {
+      "description": "Synthesis and evaluation",
+      "bloom_level": ["evaluate", "create"],
+      "typical_accuracy": "30-50%"
+    }
+  },
+  "standards_frameworks": {
+    "CCSS": {
+      "name": "Common Core State Standards",
+      "subjects": ["math", "ela"],
+      "url": "http://www.corestandards.org/"
+    },
+    "NGSS": {
+      "name": "Next Generation Science Standards",
+      "subjects": ["science"],
+      "url": "https://www.nextgenscience.org/"
+    },
+    "AP": {
+      "name": "Advanced Placement",
+      "subjects": ["all"],
+      "url": "https://apcentral.collegeboard.org/"
+    }
+  }
+}
