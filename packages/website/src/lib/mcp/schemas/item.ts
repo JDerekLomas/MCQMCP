@@ -260,7 +260,7 @@ export const ItemSchema = z.object({
   standards: StandardsSchema,
 
   // === OVERFLOW (for imports) ===
-  _raw: z.record(z.unknown()).optional(), // Unmapped fields from source
+  _raw: z.record(z.string(), z.unknown()).optional(), // Unmapped fields from source
 });
 export type Item = z.infer<typeof ItemSchema>;
 

@@ -1,6 +1,7 @@
 import { getItem, getItemToolDefinition } from './get-item';
 import { listTopics, listTopicsToolDefinition } from './list-topics';
 import { listSkills, listSkillsToolDefinition, type SkillNode } from './list-skills';
+import { matchTopicTool, matchTopicToolDefinition, type MatchTopicResult } from './match-topic';
 import type { Item } from '../schemas/item';
 import type { TopicInfo } from './list-topics';
 
@@ -11,13 +12,14 @@ export const toolDefinitions = [
   getItemToolDefinition,
   listTopicsToolDefinition,
   listSkillsToolDefinition,
+  matchTopicToolDefinition,
 ] as const;
 
 /**
  * Result type for tool execution.
  */
 export type ToolResult =
-  | { success: true; data: Item | TopicInfo[] | SkillNode | null }
+  | { success: true; data: Item | TopicInfo[] | SkillNode | MatchTopicResult | null }
   | { success: false; error: string };
 
 /**
@@ -62,6 +64,17 @@ export function executeTool(toolName: string, input: unknown): ToolResult {
         };
       }
 
+    case 'assessment_match_topic':
+      try {
+        const result = matchTopicTool(input as { objective: string });
+        return { success: true, data: result };
+      } catch (error) {
+        return {
+          success: false,
+          error: `Failed to match topic: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        };
+      }
+
     default:
       return { success: false, error: `Unknown tool: ${toolName}` };
   }
@@ -71,3 +84,4 @@ export function executeTool(toolName: string, input: unknown): ToolResult {
 export { getItem, getItemToolDefinition } from './get-item';
 export { listTopics, listTopicsToolDefinition } from './list-topics';
 export { listSkills, listSkillsToolDefinition } from './list-skills';
+export { matchTopicTool, matchTopicToolDefinition } from './match-topic';
