@@ -6,6 +6,13 @@ Assessment infrastructure for AI tutoring. MCQMCP provides validated assessments
 
 **[Full Vision](docs/VISION.md)** | **[Roadmap](docs/ROADMAP.md)** | **[Research](docs/RESEARCH.md)** | **[Server Spec](SPEC.md)**
 
+## What's New (v0.3.0)
+
+- **Hybrid Generation**: Fuzzy topic matching + AI generation for any learning objective
+- **8,500+ curated items** from FreeCodeCamp, OpenStax, SciQ, MathQA, RACE, and more
+- **Claude Sonnet fallback**: Generates quality MCQs for topics not in the item bank
+- **Smart caching**: AI-generated items stored in Supabase for reuse
+
 ## Live
 
 | Service | URL | Source |
@@ -87,8 +94,14 @@ curl -X POST https://mcqmcp.onrender.com/api/tools/call \
 
 ## MCP Server Tools
 
+### `mcq_list_topics`
+List all available topics in the item bank.
+
 ### `mcq_generate`
-Generate an MCQ for a learning objective.
+Generate an MCQ for a learning objective. Uses hybrid matching:
+1. **Alias matching** - Common variations (e.g., "useEffect" → "react-hooks")
+2. **Fuzzy matching** - Levenshtein distance for approximate matches
+3. **AI generation** - Claude Sonnet for unmatched topics (cached for reuse)
 
 **Request:**
 ```json
@@ -96,8 +109,54 @@ Generate an MCQ for a learning objective.
   "name": "mcq_generate",
   "arguments": {
     "user_id": "user123",
-    "objective": "Understanding React hooks",
+    "objective": "React hooks",
     "difficulty": "medium"
+  }
+}
+```
+
+**Response (from item bank):**
+```json
+{
+  "user_id": "user123",
+  "item_id": "react-hooks-042",
+  "topic": "react-hooks",
+  "difficulty": "medium",
+  "question": "What happens when you call useState inside a condition?",
+  "options": { "A": "...", "B": "...", "C": "...", "D": "..." },
+  "correct_answer": "B",
+  "explanation": "React relies on hook call order...",
+  "source": "curated",
+  "match_confidence": 0.95
+}
+```
+
+**Response (AI generated):**
+```json
+{
+  "user_id": "user123",
+  "item_id": "gen-abc123",
+  "topic": "quantum-computing",
+  "difficulty": "medium",
+  "question": "What allows quantum computers to process multiple states simultaneously?",
+  "options": { "A": "...", "B": "...", "C": "...", "D": "..." },
+  "correct_answer": "B",
+  "explanation": "Quantum superposition allows...",
+  "source": "ai-generated",
+  "quality": "unreviewed",
+  "model": "claude-sonnet-4-20250514"
+}
+```
+
+### `mcq_match_topic`
+Check if an objective matches an existing topic (preflight check).
+
+**Request:**
+```json
+{
+  "name": "mcq_match_topic",
+  "arguments": {
+    "objective": "JavaScript closures"
   }
 }
 ```
@@ -105,20 +164,19 @@ Generate an MCQ for a learning objective.
 **Response:**
 ```json
 {
-  "user_id": "user123",
-  "objective": "Understanding React hooks",
-  "difficulty": "medium",
-  "question": "[Medium] How would you apply the concept of: Understanding React hooks?",
-  "options": {
-    "A": "Apply it incorrectly",
-    "B": "Apply it in an unrelated context",
-    "C": "Apply it correctly with proper reasoning",
-    "D": "Avoid applying it altogether"
-  },
-  "correct_answer": "C",
-  "explanation": "Proper application requires understanding both the concept and its context."
+  "objective": "JavaScript closures",
+  "matched_topic": "js-closures",
+  "confidence": 1.0,
+  "match_type": "fuzzy",
+  "has_items": true,
+  "item_count": 45,
+  "will_use_item_bank": true,
+  "threshold": 0.6
 }
 ```
+
+### `mcq_add_item`
+Submit an external MCQ item to the cache for future use.
 
 ### `mcq_record`
 Record a learner's response, log it for analytics, and update mastery.
@@ -250,6 +308,26 @@ CREATE TABLE responses (
 );
 ```
 
+#### `generated_items` - AI-generated MCQ cache
+```sql
+CREATE TABLE generated_items (
+  id UUID PRIMARY KEY,
+  objective TEXT NOT NULL,
+  objective_normalized TEXT NOT NULL,
+  topic TEXT,
+  difficulty TEXT,
+  stem TEXT NOT NULL,
+  options JSONB NOT NULL,
+  correct TEXT NOT NULL,
+  feedback JSONB NOT NULL,
+  source TEXT DEFAULT 'ai-generated',
+  model TEXT,
+  quality TEXT DEFAULT 'unreviewed',
+  use_count INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
 **What's captured:**
 - Every individual response with timestamp
 - Response latency (if provided)
@@ -315,6 +393,7 @@ npm run dev:server
 |----------|-------------|
 | `SUPABASE_URL` | Supabase project URL |
 | `SUPABASE_KEY` | Supabase anon/service key |
+| `ANTHROPIC_API_KEY` | Claude API key for AI generation (optional) |
 | `PORT` | Server port (set by Render) |
 
 ### Website
