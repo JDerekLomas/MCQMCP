@@ -6,10 +6,11 @@ Assessment infrastructure for AI tutoring. MCQMCP provides validated assessments
 
 **[Full Vision](docs/VISION.md)** | **[Roadmap](docs/ROADMAP.md)** | **[Research](docs/RESEARCH.md)** | **[Server Spec](SPEC.md)**
 
-## What's New (v0.3.0)
+## What's New (v0.4.0)
 
+- **34,349 benchmark items** from GSM8K, MMLU, ARC, SciQ, RACE, MathQA, and more
 - **Hybrid Generation**: Fuzzy topic matching + AI generation for any learning objective
-- **8,500+ curated items** from FreeCodeCamp, OpenStax, SciQ, MathQA, RACE, and more
+- **Centralized data**: `/data` folder with item bank and skill tree
 - **Claude Sonnet fallback**: Generates quality MCQs for topics not in the item bank
 - **Smart caching**: AI-generated items stored in Supabase for reuse
 
@@ -25,6 +26,15 @@ Assessment infrastructure for AI tutoring. MCQMCP provides validated assessments
 
 ```
 MCQMCP/
+├── data/                # Benchmark datasets (34k items)
+│   ├── item-bank.json   # All MCQ items (52MB)
+│   ├── skill-tree.json  # Skill taxonomy
+│   └── README.md        # Data documentation
+├── scripts/             # Dataset import scripts
+│   ├── import-gsm8k.js  # Grade school math
+│   ├── import-mmlu-*.js # MMLU benchmark
+│   ├── import-arc.js    # ARC science
+│   └── ...
 ├── packages/
 │   ├── server/          # MCP server (deployed to Render)
 │   │   ├── src/         # Server source code
@@ -33,6 +43,7 @@ MCQMCP/
 │   └── website/         # Marketing site + demo (deployed to Vercel)
 │       ├── src/app/     # Next.js pages
 │       └── package.json
+├── supabase/            # Database schema (not yet deployed)
 ├── docs/                # Vision, roadmap, research
 ├── SPEC.md              # Server specification
 └── package.json         # Workspace root
@@ -480,13 +491,19 @@ See `packages/website/src/lib/mcp/schemas/item.ts` for the full Zod schema.
 
 ## Item Sources
 
-| Source | License | Topics |
-|--------|---------|--------|
-| `mcqmcp-original` | CC-BY-4.0 | Programming, AI/LLMs |
-| `freecodecamp` | BSD-3-Clause | JavaScript, React, Python |
-| `openstax` | CC-BY-4.0 | Math, Science |
-| `ck12` | CC-BY-NC | K-12 STEM |
-| `webwork` | GPL | Math (Algebra → Calculus) |
+| Source | Count | License | Topics |
+|--------|-------|---------|--------|
+| `mmlu-hendrycks` | 9,987 | MIT | Multi-subject benchmark |
+| `gsm8k-openai` | 8,792 | MIT | Grade school math |
+| `sciq-allenai` | 5,000 | CC-BY-NC | Science questions |
+| `race-cmu` | 4,801 | Research | Reading comprehension |
+| `arc-allenai` | 2,609 | CC-BY-SA | AI2 Reasoning Challenge |
+| `mathqa` | 2,328 | Apache-2.0 | Math word problems |
+| `aqua-deepmind` | 399 | Apache-2.0 | Algebra QA |
+| `freecodecamp` | 382 | BSD-3-Clause | Programming |
+| `mcqmcp-ai-generated` | 51 | CC-BY-4.0 | Original items |
+
+**Total: 34,349 items**
 
 ## Topic Taxonomy
 

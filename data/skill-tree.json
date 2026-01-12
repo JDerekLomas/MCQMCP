@@ -1,0 +1,166 @@
+{
+  "version": "1.0",
+  "tree": {
+    "id": "frontend",
+    "name": "Frontend Engineering",
+    "children": [
+      {
+        "id": "javascript",
+        "name": "JavaScript",
+        "children": [
+          {
+            "id": "js-fundamentals",
+            "name": "Fundamentals",
+            "children": [
+              { "id": "js-variables", "name": "Variables & Scope" },
+              { "id": "js-types", "name": "Types & Coercion" },
+              { "id": "js-operators", "name": "Operators" }
+            ]
+          },
+          {
+            "id": "js-functions",
+            "name": "Functions",
+            "children": [
+              { "id": "js-this", "name": "this Binding" },
+              { "id": "js-closures", "name": "Closures" },
+              { "id": "js-arrow", "name": "Arrow Functions" },
+              { "id": "js-higher-order", "name": "Higher-Order Functions" }
+            ]
+          },
+          {
+            "id": "js-async",
+            "name": "Async Programming",
+            "children": [
+              { "id": "js-callbacks", "name": "Callbacks" },
+              { "id": "js-promises", "name": "Promises" },
+              { "id": "js-async-await", "name": "Async/Await" },
+              { "id": "js-event-loop", "name": "Event Loop" },
+              { "id": "js-timers", "name": "Timers & Microtasks" }
+            ]
+          },
+          {
+            "id": "js-objects",
+            "name": "Objects & Classes",
+            "children": [
+              { "id": "js-prototypes", "name": "Prototypes" },
+              { "id": "js-classes", "name": "ES6 Classes" },
+              { "id": "js-inheritance", "name": "Inheritance" }
+            ]
+          },
+          {
+            "id": "js-patterns",
+            "name": "Patterns & Idioms",
+            "children": [
+              { "id": "js-destructuring", "name": "Destructuring" },
+              { "id": "js-spread", "name": "Spread/Rest" },
+              { "id": "js-modules", "name": "Modules" }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "react",
+        "name": "React",
+        "children": [
+          {
+            "id": "react-basics",
+            "name": "Basics",
+            "children": [
+              { "id": "react-components", "name": "Components" },
+              { "id": "react-jsx", "name": "JSX" },
+              { "id": "react-props", "name": "Props" }
+            ]
+          },
+          {
+            "id": "react-hooks",
+            "name": "Hooks",
+            "children": [
+              { "id": "react-useState", "name": "useState" },
+              { "id": "react-useEffect", "name": "useEffect" },
+              { "id": "react-useContext", "name": "useContext" },
+              { "id": "react-useRef", "name": "useRef" },
+              { "id": "react-useMemo", "name": "useMemo & useCallback" },
+              { "id": "react-custom-hooks", "name": "Custom Hooks" }
+            ]
+          },
+          {
+            "id": "react-state",
+            "name": "State Management",
+            "children": [
+              { "id": "react-lifting-state", "name": "Lifting State" },
+              { "id": "react-context", "name": "Context API" },
+              { "id": "react-reducers", "name": "Reducers" }
+            ]
+          },
+          {
+            "id": "react-patterns",
+            "name": "Patterns",
+            "children": [
+              { "id": "react-composition", "name": "Composition" },
+              { "id": "react-render-props", "name": "Render Props" },
+              { "id": "react-hoc", "name": "Higher-Order Components" }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "html-css",
+        "name": "HTML & CSS",
+        "children": [
+          {
+            "id": "html-basics",
+            "name": "HTML",
+            "children": [
+              { "id": "html-semantics", "name": "Semantic HTML" },
+              { "id": "html-forms", "name": "Forms" },
+              { "id": "html-accessibility", "name": "Accessibility" }
+            ]
+          },
+          {
+            "id": "html-events",
+            "name": "DOM Events",
+            "children": [
+              { "id": "html-event-handling", "name": "Event Handling" },
+              { "id": "html-bubbling", "name": "Bubbling & Capturing" },
+              { "id": "html-delegation", "name": "Event Delegation" }
+            ]
+          },
+          {
+            "id": "css-layout",
+            "name": "CSS Layout",
+            "children": [
+              { "id": "css-box-model", "name": "Box Model" },
+              { "id": "css-flexbox", "name": "Flexbox" },
+              { "id": "css-grid", "name": "Grid" },
+              { "id": "css-positioning", "name": "Positioning" }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "typescript",
+        "name": "TypeScript",
+        "children": [
+          {
+            "id": "ts-basics",
+            "name": "Basics",
+            "children": [
+              { "id": "ts-types", "name": "Basic Types" },
+              { "id": "ts-interfaces", "name": "Interfaces" },
+              { "id": "ts-type-aliases", "name": "Type Aliases" }
+            ]
+          },
+          {
+            "id": "ts-advanced",
+            "name": "Advanced",
+            "children": [
+              { "id": "ts-generics", "name": "Generics" },
+              { "id": "ts-utility-types", "name": "Utility Types" },
+              { "id": "ts-conditional", "name": "Conditional Types" }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -38,25 +38,50 @@ npm run start:http   # Run server (HTTP/SSE transport)
 
 ```
 MCQMCP-monorepo/
+├── data/                    # Benchmark datasets (34,349 items)
+│   ├── item-bank.json       # All MCQ items (52MB)
+│   ├── skill-tree.json      # Skill taxonomy
+│   └── README.md            # Data documentation
+├── scripts/                 # Dataset import scripts
+│   ├── import-gsm8k.js      # Grade school math (8,792 items)
+│   ├── import-mmlu-full.js  # MMLU benchmark (9,987 items)
+│   ├── import-arc.js        # ARC science (2,609 items)
+│   ├── import-sciq.js       # Science questions (5,000 items)
+│   └── ...
 ├── packages/
 │   ├── server/              # MCP server (Render)
 │   │   ├── src/
 │   │   │   ├── index.ts     # Server with MCP tools
-│   │   │   ├── item-bank.json    # Item bank (82+ items)
 │   │   │   └── taxonomy.json     # Topic taxonomy
 │   │   └── package.json
 │   └── website/             # Marketing + demo (Vercel)
 │       ├── src/
 │       │   ├── app/         # Next.js pages
 │       │   └── lib/mcp/
+│       │       ├── item-bank.json → ../../data/item-bank.json
 │       │       └── schemas/item.ts  # Zod schema v2.0
 │       └── package.json
+├── supabase/                # Database schema (not yet deployed)
 ├── .claude/commands/        # Claude Code slash commands
 │   ├── create-item.md       # Generate new MCQs
 │   ├── import-items.md      # Import from external sources
 │   └── search-item-banks.md # Search OER repositories
 └── docs/                    # Vision, roadmap, research
 ```
+
+## Item Bank Sources
+
+| Source | Count | Description |
+|--------|-------|-------------|
+| mmlu-hendrycks | 9,987 | MMLU benchmark |
+| gsm8k-openai | 8,792 | Grade school math |
+| sciq-allenai | 5,000 | Science questions |
+| race-cmu | 4,801 | Reading comprehension |
+| arc-allenai | 2,609 | ARC science reasoning |
+| mathqa | 2,328 | Math word problems |
+| aqua-deepmind | 399 | Algebra QA |
+| freecodecamp | 382 | Programming |
+| mcqmcp-ai-generated | 51 | Original items |
 
 ## Item Schema v2.0
 
