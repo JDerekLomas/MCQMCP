@@ -6,7 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
   'https://cxzwclvkkjvkromubzmp.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN4endjbHZra2p2a3JvbXViem1wIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NDE1MjEzOCwiZXhwIjoyMDc5NzI4MTM4fQ.eQNjAwY_6jIft6olbpnlysuSukZWmXlTQmKDCxHonJQ'
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
 const HF_API = 'https://datasets-server.huggingface.co/rows';
